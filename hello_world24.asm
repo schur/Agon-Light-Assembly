@@ -8,7 +8,7 @@
 
 			.ASSUME	ADL = 1				
 
-#include "init.asm"
+#include "include/init.asm"
 
 ; The main routine
 ;
