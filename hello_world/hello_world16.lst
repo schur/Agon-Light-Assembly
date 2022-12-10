@@ -1,0 +1,124 @@
+    1 00:0000 -  -  -  -  ;
+    2 00:0000 -  -  -  -  ; Title:	Hello World - Main
+    3 00:0000 -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:0000 -  -  -  -  ; Created:	06/11/2022
+    5 00:0000 -  -  -  -  ; Last Updated:	09/12/2022
+    6 00:0000 -  -  -  -  
+    7 00:0000 -  -  -  -  ; define or undefine ADL (24-bit) mode
+    8 00:0000 -  -  -  -  	#undefine ADL
+    9 00:0000 -  -  -  -  ;	#undefine ADL
+   10 00:0000 -  -  -  -  
+   11 00:0000 -  -  -  -  #include "../include/init.asm"
+Listing for file "/home/reiny/Agon Light/Agon-Light-Assembly/hello_world/../include/init.asm"
+    1 00:0000 -  -  -  -  ;
+    2 00:0000 -  -  -  -  ; Title:	Initialisation Code
+    3 00:0000 -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:0000 -  -  -  -  ; Created:	06/11/2022
+    5 00:0000 -  -  -  -  ; Last Updated:	09/12/2022
+    6 00:0000 -  -  -  -  ;
+    7 00:0000 -  -  -  -  #ifdef ADL
+    8 00:0000             			; Start in ADL mode
+    9 00:0000             			.ASSUME	ADL = 1
+   10 00:0000             			; Set Code location to $40000 (MOS default user RAM)
+   11 00:0000             			.ORG $40000
+   12 00:0000             #else
+   13 00:0000 -  -  -  -  			.ASSUME	ADL = 0
+   14 00:0000 -  -  -  -  			; Set Code location to $0000 (as we are in 16-bit mode)
+   15 00:0000 -  -  -  -  			.ORG $0000
+   16 00:0000 -  -  -  -  #endif
+   17 00:0000 -  -  -  -  
+   18 00:0000 18 43 -  -  			JR		_START		; Jump to start
+   19 00:0002 00 00 00 00 
+              00 00 -  -  			.BLOCK	6
+   20 00:0008 -  -  -  -  
+   21 00:0008 -  -  -  -  #ifdef ADL
+   22 00:0008             			; if in ADL (24-bit) mode, fill; with 0 up to byte $40 (MOS header)
+   23 00:0008             			.BLOCK $38
+   24 00:0008             #else
+   25 00:0008 -  -  -  -  			; set RST vectors if in Z80 compatibility (16-bit) mode
+   26 00:0008 -  -  -  -  			; which will call the "real" RST vector
+   27 00:0008 -  -  -  -  
+   28 00:0008 49 CF -  -  RST_08:		RST.LIS		08h		; API call
+   29 00:000A C9 -  -  -  			RET
+   30 00:000B 00 00 00 00 
+              00 -  -  -  			.BLOCK	5
+   31 00:0010 -  -  -  -  			
+   32 00:0010 49 D7 -  -  RST_10:		RST.LIS 	10h		; Output
+   33 00:0012 C9 -  -  -  			RET
+   34 00:0013 00 00 00 00 
+              00 -  -  -  			.BLOCK	5
+   35 00:0018 -  -  -  -  			
+   36 00:0018 00 00 00 00 
+              00 00 00 00 RST_18:		.BLOCK	8
+   37 00:0020 00 00 00 00 
+              00 00 00 00 RST_20:		.BLOCK	8
+   38 00:0028 00 00 00 00 
+              00 00 00 00 RST_28:		.BLOCK	8
+   39 00:0030 00 00 00 00 
+              00 00 00 00 RST_30:		.BLOCK	8	
+   40 00:0038 -  -  -  -  ;	
+   41 00:0038 -  -  -  -  ; The NMI interrupt vector (not currently used by AGON)
+   42 00:0038 -  -  -  -  ;
+   43 00:0038 FB -  -  -  RST_38:		EI
+   44 00:0039 ED 4D -  -  			RETI
+   45 00:003B 00 00 00 00 
+              00 -  -  -  			.BLOCK  5
+   46 00:0040 -  -  -  -  #endif
+   47 00:0040 -  -  -  -  
+   48 00:0040 -  -  -  -  ; The header stuff is from byte $40 onwards
+   49 00:0040 -  -  -  -  
+   50 00:0040 4D 4F 53 -              .DB		"MOS"	; Flag for MOS - to confirm this is a valid MOS command
+   51 00:0043 00 -  -  -  			.DB		0		; MOS header version 0
+   52 00:0044 -  -  -  -  #ifdef ADL
+   53 00:0044             			.DB		1		; Flag for run mode (0: Z80, 1: ADL)
+   54 00:0044             #else
+   55 00:0044 00 -  -  -  			.DB		0
+   56 00:0045 -  -  -  -  #endif
+   57 00:0045 -  -  -  -  ;
+   58 00:0045 -  -  -  -  ; And the code follows on immediately after the header
+   59 00:0045 -  -  -  -  ;
+   60 00:0045 FB -  -  -  _START:		EI				; Enable the MOS interrupts
+   61 00:0046 CD 52 00 -  			CALL	MAIN	; Start user Code
+   62 00:0049 -  -  -  -  #ifdef ADL
+   63 00:0049             			RET
+   64 00:0049             #else
+   65 00:0049 49 C9 -  -  			RET.L
+   66 00:004B -  -  -  -  #endif
+Listing for file "/home/reiny/Agon Light/Agon-Light-Assembly/hello_world/hello_world.asm"
+   12 00:004B -  -  -  -  #include "../include/basic_routines.asm"
+Listing for file "/home/reiny/Agon Light/Agon-Light-Assembly/hello_world/../include/basic_routines.asm"
+    1 00:004B -  -  -  -  ;
+    2 00:004B -  -  -  -  ; Title:	Basic Routines
+    3 00:004B -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:004B -  -  -  -  ; Created:	06/11/2022
+    5 00:004B -  -  -  -  ; Last Updated:	10/12/2022
+    6 00:004B -  -  -  -  ;
+    7 00:004B -  -  -  -  
+    8 00:004B -  -  -  -  ; Print a zero-terminated string
+    9 00:004B -  -  -  -  ;
+   10 00:004B 7E -  -  -  PRSTR:	LD		A,(HL)
+   11 00:004C B7 -  -  -  		OR		A
+   12 00:004D C8 -  -  -  		RET		Z
+   13 00:004E -  -  -  -  #ifdef ADL
+   14 00:004E             		RST.LIL	$10
+   15 00:004E             #else
+   16 00:004E D7 -  -  -      	RST		$10
+   17 00:004F -  -  -  -  #endif
+   18 00:004F 23 -  -  -  		INC		HL
+   19 00:0050 18 F9 -  -  		JR		PRSTR
+Listing for file "/home/reiny/Agon Light/Agon-Light-Assembly/hello_world/hello_world.asm"
+   13 00:0052 -  -  -  -  
+   14 00:0052 -  -  -  -  ; The main routine
+   15 00:0052 -  -  -  -  ;
+   16 00:0052 21 5F 00 00 MAIN:	LD		HL, HELLO_WORLD
+   17 00:0056 CD 4B 00 00 		CALL	PRSTR
+   18 00:005A 21 00 00 00 		LD		HL, 0
+   19 00:005E C9 -  -  -  		RET
+   20 00:005F -  -  -  -  	
+   21 00:005F -  -  -  -  ; Sample text
+   22 00:005F -  -  -  -  ;
+   23 00:005F 48 65 6C 6C 
+              6F 20 57 6F 
+              72 6C 64 0A 
+              0D 00 -  -  HELLO_WORLD:		.DB 	"Hello World\n\r",0
+   24 00:006D -  -  -  -  
