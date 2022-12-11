@@ -7,13 +7,13 @@
 
 ; Print a zero-terminated string pointed to by HL
 ;
-PRSTR:	LD	A,(HL)
+PRSTR:		LD	A,(HL)
 		OR	A
 		RET	Z
 #ifdef ADL
 		RST.LIL	$10
 #else
-    		RST	$10
+		RST	$10
 #endif
 		INC	HL
 		JR	PRSTR

@@ -9,16 +9,16 @@
 ;	#undefine ADL
 
 #include "../include/init.asm"
-#include "../include/basic_routines.asm"
+#include "../include/helper_functions.asm"
 
 ; The main routine
 ;
-MAIN:	LD		HL, HELLO_WORLD
+MAIN:	LD	HL, HELLO_WORLD
 		CALL	PRSTR
-		LD		HL, 0
+		LD	HL, 0
 		RET
 	
 ; Sample text
 ;
-HELLO_WORLD:		.DB 	"Hello World\n\r",0
+HELLO_WORLD:	.DB	"Hello World\n\r",0
 
