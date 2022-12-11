@@ -32,6 +32,7 @@ If you would like to write your own programs, feel free to use the [include file
         
         #include "../include/init.asm"
         #include "../include/helper_functions.asm"
+        #include "../include/mos_api.inc"
 
 2. Write your own code with the main function labelled "MAIN"
 
