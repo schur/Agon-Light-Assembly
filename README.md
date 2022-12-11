@@ -45,3 +45,6 @@ In Z80 legacy mode, the program will, from its point of view, be located from ad
 
 If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card), you must use Z80 legacy (16-bit) mode. This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
 
+### Resources
+
+[eZ80 Heaven](https://ez80.readthedocs.io/en/latest/)
