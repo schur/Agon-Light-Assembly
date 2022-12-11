@@ -10,9 +10,11 @@ assemble with spasm -E -T <filename>
 1. Clone the git repo to your local
 
         git clone https://github.com/schur/Agon-Light-Assembly/
+
 2. Assemble the desired programs with
 
         spasm -E -T <filename>
+   [spasm-ng Manual](#spasm-ng-manual)
 
 ## Coding Guidelines
 
@@ -45,6 +47,11 @@ In Z80 legacy mode, the program will, from its point of view, be located from ad
 
 If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card), you must use Z80 legacy (16-bit) mode. This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
 
-### Resources
+## spasm-ng Manual
 
-[eZ80 Heaven](https://ez80.readthedocs.io/en/latest/)
+There is no manual for the spasm-ng assembler itself. However, the syntax for assembler directives follows tasm, so you can refer to the Source File Format, Expressions and Assembler Directives sections of the [TASM Manual](http://www.s100computers.com/Software%20Folder/6502%20Monitor/The%20Telemark%20Assembler%20Manual.pdf)
+
+## Resources
+
+- [eZ80 Heaven](https://ez80.readthedocs.io/en/latest/)
+- [TASM Manual](http://www.s100computers.com/Software%20Folder/6502%20Monitor/The%20Telemark%20Assembler%20Manual.pdf)
