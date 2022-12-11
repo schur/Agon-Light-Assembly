@@ -1,7 +1,12 @@
 # Agon-Light-Assembly
-Software for the Agon Light written in eZ80 Assembly
+Software for the Agon Light™ written in eZ80 Assembly
 
 The source .asm files syntax is for [spasm-ng](https://github.com/alberthdev/spasm-ng)
+
+The file init.asm in the include directory provides the necessary header for an assembly program to work with the MOS.
+The file helper_functions.asm has some essentiual functions (Work in Progress- to be expanded)
+
+Feel free to contribute.
 
 ## Instructions
 
