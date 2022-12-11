@@ -118,7 +118,7 @@ vdp_pflag_mode:		.EQU		00010000b
 ;
 ; Macro for calling the API
 ; Parameters:
-; - function: One of the function numbers listed above
+; - mosfunc: One of the function numbers listed above
 ;
 
 #ifdef ADL
