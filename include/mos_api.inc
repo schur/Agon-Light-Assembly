@@ -1,7 +1,7 @@
 ;
 ; Title:	AGON MOS - API for user projects
 ; Author:	Dean Belfield
-; Ported to spam-ng: Reinhard Schu
+; Ported to spasm-ng: Reinhard Schu
 ; Created:	03/08/2022
 ; Last Updated:	10/12/2022
 ;

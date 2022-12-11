@@ -1,13 +1,13 @@
 ;
 ; Title:	Memory Dump - Main
 ; Author:	Dean Belfield
-; Ported to spam-ng: Reinhard Schu
+; Ported to spasm-ng: Reinhard Schu
 ; Created:	15/11/2022
 ; Last Updated:	11/12/2022
 ;
 ; define or undefine ADL (24-bit) mode
+; this program will run as a MOS command, so we use 16-bit mode
 	#undefine ADL
-;	#undefine ADL
 
 #include "../include/init.inc"
 #include "../include/helper_functions.asm"

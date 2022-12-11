@@ -1,7 +1,7 @@
 ;
 ; Title:	Memory Dump - Parsing Functions
 ; Author:	Dean Belfield
-; Ported to spam-ng: Reinhard Schu
+; Ported to spasm-ng: Reinhard Schu
 ; Created:	15/11/2022
 ; Last Updated:	11/12/2022
 ;
