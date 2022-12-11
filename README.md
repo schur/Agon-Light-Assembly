@@ -53,3 +53,6 @@ There is no manual for the spasm-ng assembler itself. However, the syntax for as
 
 - [eZ80 Heaven](https://ez80.readthedocs.io/en/latest/)
 - [TASM Manual](http://www.s100computers.com/Software%20Folder/6502%20Monitor/The%20Telemark%20Assembler%20Manual.pdf)
+- [MOS Information and Memory Map](https://github.com/breakintoprogram/agon-mos)
+- [MOS API](https://github.com/breakintoprogram/agon-mos/blob/main/API.md)
+- [VDP Commands](https://github.com/breakintoprogram/agon-vdp/blob/main/MANUAL.md)
