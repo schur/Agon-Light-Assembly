@@ -50,6 +50,16 @@ In Z80 legacy mode, the program will, from its point of view, be located from ad
 
 If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card), you must use Z80 legacy (16-bit) mode. This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
 
+### The MOS executable format
+
+The MOS header is stored from bytes 64 in the executable and consists of the following:
+
+- A three byte ASCII representation of the word MOS
+- A single byte for the header version
+- A single byte for the executable type: 0 = Z80, 1 = ADL
+
+Note: This is already taken care of by the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file in this repository.
+
 ## spasm-ng Manual
 
 There is no manual for the spasm-ng assembler itself. However, the syntax for assembler directives follows tasm, so you can refer to the Source File Format, Expressions and Assembler Directives sections of the [TASM Manual](http://www.s100computers.com/Software%20Folder/6502%20Monitor/The%20Telemark%20Assembler%20Manual.pdf)
