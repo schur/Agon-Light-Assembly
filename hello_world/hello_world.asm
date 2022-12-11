@@ -8,7 +8,7 @@
 	#undefine ADL
 ;	#undefine ADL
 
-#include "../include/init.asm"
+#include "../include/init.inc"
 #include "../include/helper_functions.asm"
 
 ; The main routine

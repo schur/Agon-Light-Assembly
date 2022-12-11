@@ -5,7 +5,7 @@
 ; Last Updated:	11/12/2022
 ;
 
-; Print a zero-terminated string pointed to by HL
+; Print character in A
 ;
 #MACRO  PRT_CHR
 #ifdef ADL
@@ -15,6 +15,8 @@
 #endif
 #ENDMACRO
 
+; Print LF+CR
+;
 #MACRO  PRT_CRLF
                 LD      A,'\n'
                 PRT_CHR
@@ -22,15 +24,16 @@
                 PRT_CHR
 #ENDMACRO
 
-
+; Print a zero-terminated string
+; HL: pointer to string
+;
 PRSTR:		LD	A,(HL)
 		OR	A
 		RET	Z
                 PRT_CHR
 		INC	HL
 		JR	PRSTR
-; Print a zero-terminated string
-;
+
 ; Print a 24-bit HEX number
 ; HLU: Number to print
 ;
