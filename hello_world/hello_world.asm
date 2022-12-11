@@ -13,7 +13,8 @@
 
 ; The main routine
 ;
-MAIN:	        LD	HL, HELLO_WORLD
+MAIN:	        
+                LD	HL, HELLO_WORLD
 		CALL	PRSTR
 		LD	HL, 0
 		RET
