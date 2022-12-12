@@ -79,15 +79,6 @@ ASC_TO_NUMBER4:	POP.LIL		BC
 		SCF					; We have a valid number so set carry
 		RET
 
-; Skip a space
-; HL: Pointer in string buffer
-; 
-SKIPSP:		LD.LIL		A, (HL)
-		CP      	' '
-		RET     	NZ
-		INC.LIL		HL
-		JR      	SKIPSP
-
 ; Convert a character to upper case
 ;  A: Character to convert
 ;

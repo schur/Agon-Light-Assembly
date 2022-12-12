@@ -68,3 +68,45 @@ prtnbl:		AND	0Fh
 		DAA
 		PRT_CHR
 		RET
+
+; Skip whitespaces
+; HL: Pointer in string buffer
+; 
+SKIPSP:		LD.LIL		A, (HL)
+		CP      	' '
+		RET     	NZ
+		INC.LIL		HL
+		JR      	SKIPSP
+
+
+; Read next argument from buffer 
+; Inputs:   HL: Pointer in string buffer
+;           DE: Pointer to Buffer where to copy argument
+; Outputs:  HL: Updated pointer in string buffer
+;           DE: Pointer to Buffer argument was copied to (preserved from input)
+;            F: Carry set if argument read, otherwise reset
+; Destroys: A,H,L,F;
+; 
+
+READ_ARG:	CALL		SKIPSP			; Skip whitespace
+		LD.LIL		A,(HL)			; Read first character
+		OR		A			; Check for end of string
+		RET		Z			; Return with no carry if not
+		PUSH    	DE			; Preserve DE
+
+READ_ARG1:      LD.LIL		A,(HL)			; Fetch the character
+                OR              A                       ; Check for end of string
+                JR              Z,READ_ARG4             ; end of argument, finish
+                CP              ' '                     ; if whitespace
+                JR              Z,READ_ARG4             ; end of argument, finish
+                LD              (DE),A                  ; store the character
+		INC.LIL		HL			; next charcater 
+                INC     	DE
+                JR              READ_ARG1
+
+READ_ARG4:	XOR             A
+                LD              (DE),A                  ; terminate output buffer
+                POP		DE 	                ; restore DE
+		SCF					; We have a valid argument so set carry
+		RET
+                
