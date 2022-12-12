@@ -72,3 +72,4 @@ There is no manual for the spasm-ng assembler itself. However, the syntax for as
 - [MOS Information and Memory Map](https://github.com/breakintoprogram/agon-mos)
 - [MOS API](https://github.com/breakintoprogram/agon-mos/blob/main/API.md)
 - [VDP Commands](https://github.com/breakintoprogram/agon-vdp/blob/main/MANUAL.md)
+- [Learn eZ80 Assembly](https://www.chibiakumas.com/ez80/)
