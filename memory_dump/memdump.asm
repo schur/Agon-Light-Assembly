@@ -94,5 +94,5 @@ Memory_Dump_5:		LD		(IX+1),0Dh
 ; RAM
 ; 
 			
-Buffer:			.BLOCK	256
+Buffer:
 			

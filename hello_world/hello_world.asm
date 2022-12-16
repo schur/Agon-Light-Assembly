@@ -5,7 +5,7 @@
 ; Last Updated:	11/12/2022
 
 ; define or undefine ADL (24-bit) mode
-	#undefine ADL
+	#define ADL
 ;	#undefine ADL
 
 #include "../include/init.inc"

@@ -2,27 +2,10 @@
 ; Title:	Helper Functions
 ; Author:	Dean Belfield, Reinhard Schu
 ; Created:	06/11/2022
-; Last Updated:	11/12/2022
+; Last Updated:	14/12/2022
 ;
 
-; Print character in A
-;
-#MACRO  PRT_CHR
-#ifdef ADL
-		RST.LIL	$10
-#else
-		RST	$10
-#endif
-#ENDMACRO
-
-; Print LF+CR
-;
-#MACRO  PRT_CRLF
-                LD      A,'\n'
-                PRT_CHR
-                LD      A,'\r'
-                PRT_CHR
-#ENDMACRO
+        #include "../include/helper_macros.inc"
 
 ; Print a zero-terminated string
 ; HL: pointer to string
