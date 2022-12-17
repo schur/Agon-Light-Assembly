@@ -10,10 +10,14 @@ Then put the file checkargs.bin in the /mos directory of your SD card. It can no
 
 ## Usage
 
-Usage: `checkargs <argument 1> <argument 2>`
+Usage: `checkargs <argument 1> <argument 2>`<...>
 
-The program outputs the arguments entered, stripping any whitespaces
+The program outputs the arguments entered (up to 255), stripping any whitespaces
 
 ## Credit
 
 Used some code from memdump by Dean Belfield.
+
+## Screenshot 
+
+![checkargs output](checkargs_output.png)
