@@ -17,17 +17,14 @@
 ; Reads up to 2 arguments from the command line, strips whitespaces and prints the arguments
 ;
 MAIN:	        
-                PUSH.LIL        HL                      ; preserve HL
-                LD              HL,You_entered          ; print message
+                LD              IX,You_entered          ; print message
                 CALL            PRSTR
-                POP.LIL         HL                      ; recall HL
 
                 LD              DE,Buffer1              ; set DE to point to buffer
-                CALL            READ_ARG                ; read argument
+                CALL            READ_ARG                ; read argument (from HL to DE)
                 JR              NC,noargs               ; exit if no arguments
 
-                PUSH.LIL        HL                      ; preserve HL
-                LD              HL,Arg                  ; print message
+                LD              IX,Arg                  ; print message
                 CALL            PRSTR
                 LD              A,'1'
                 PRT_CHR
@@ -35,16 +32,15 @@ MAIN:
                 PRT_CHR
                 LD              A,' '
                 PRT_CHR
-                LD              H,D                     ; Print argument in Buffer DE
-                LD              L,E
+                LD              IXH,D			; Print argument in Buffer DE
+                LD              IXL,E
                 CALL            PRSTR
                 PRT_CRLF
 
-                POP.LIL         HL                      ; recall HL
                 LD              DE,Buffer1
-                CALL            READ_ARG                ; read next argument
+                CALL            READ_ARG                ; read next argument (from HL to DE)
                 JR              NC,main_end             ; no more arguments, finish
-                LD              HL,Arg
+                LD              IX,Arg
                 CALL            PRSTR
                 LD              A,'2'
                 PRT_CHR
@@ -52,14 +48,14 @@ MAIN:
                 PRT_CHR
                 LD              A,' '
                 PRT_CHR
-                LD              H,D                     ; Print argument in Buffer DE
-                LD              L,E
+                LD              IXH,D                     ; Print argument in Buffer DE
+                LD              IXL,E
                 CALL            PRSTR
                 PRT_CRLF
 
                 JR              main_end
 
-noargs:         LD              HL,Nothing
+noargs:         LD              IX,Nothing
                 CALL            PRSTR
 
 main_end:       LD              HL,0                    ;return zero to MOS

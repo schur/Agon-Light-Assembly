@@ -8,14 +8,15 @@
         #include "../include/helper_macros.inc"
 
 ; Print a zero-terminated string
-; HL: pointer to string
+; IX: pointer to string
+; destroys: IX, A
 ;
-PRSTR:		LD	A,(HL)
-		OR	A
-		RET	Z
+PRSTR:		LD		A,(IX)
+		OR		A	
+		RET		Z		; finish if zero
                 PRT_CHR
-		INC	HL
-		JR	PRSTR
+		INC		IX
+		JR		PRSTR		; loop around to next byte
 
 ; Print a 24-bit HEX number
 ; HLU: Number to print

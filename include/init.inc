@@ -2,7 +2,7 @@
 ; Title:	Initialisation Code
 ; Author:	Dean Belfield, Reinhard Schu
 ; Created:	06/11/2022
-; Last Updated:	13/12/2022
+; Last Updated:	16/12/2022
 ;
 
 #ifdef ADL
@@ -63,9 +63,9 @@ _START:
                 CP      $0B             ; are we running as a MOS command?
                 JR      NZ,_START1      ; if not, jump ahead
 
-                LD      HL,0
-                ADD     HL,SP           ; push SPS 
-                PUSH.LIS HL             ; to SPL stack
+                LD      IX,0
+                ADD     IX,SP           ; push SPS 
+                PUSH.LIS IX             ; to SPL stack
                 LD      SP,$7FFE        ; set SP to top of 32kb ram for MOS commands
 
 _START1:        PUSH.L  AF              ; push Mbase register (still in A from above) onto SPL stack                
@@ -78,10 +78,8 @@ _START1:        PUSH.L  AF              ; push Mbase register (still in A from a
                 POP.L   AF              ; pull Mbase register back
                 CP      $0B             ; were we running as a MOS command?
                 JR      NZ,_START2      ; if not, jump ahead
-                EX      DE,HL           ; preserve HL (MOS return value)       
-                POP.LIS HL              ; pull SPS back from SPL stack
-                LD.SIS  SP,HL           ; restore previous SPS
-                EX      DE,HL           ; restore HL
+                POP.LIS IX              ; pull SPS back from SPL stack
+                LD.SIS  SP,IX           ; restore previous SPS
 #endif
 _START2:        
 #ifdef ADL

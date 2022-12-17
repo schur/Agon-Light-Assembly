@@ -14,7 +14,7 @@
 
 ; The main routine
 ;
-MAIN:	        LD	        HL,HELLO_WORLD
+MAIN:	        LD	        IX,HELLO_WORLD
 		CALL	        PRSTR
 
 ;

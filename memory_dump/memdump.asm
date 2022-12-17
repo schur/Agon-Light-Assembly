@@ -85,10 +85,8 @@ Memory_Dump_4:		PRT_CHR
 Memory_Dump_5:		LD		(IX+1),0Dh
 			LD		(IX+2),0Ah
 			LD		(IX+3),00h
-			PUSH.LIL	HL
-			LD		HL, Buffer
+			LD		IX, Buffer
 			CALL		PRSTR
-			POP.LIL		HL
 			RET
 		
 ; RAM
