@@ -51,6 +51,9 @@ In Z80 legacy mode, the program will, from its point of view, be located from ad
 
 If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card), you must use Z80 legacy (16-bit) mode. This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
 
+In addition, the SPS stack pointer needs to be set to $7FFE before starting to push any values onto the SPS, otherwise the MOS command's SPS will conflict with the global SPL. Note: This is already taken care of by the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file in this repository.  See the [stacktest](https://github.com/schur/Agon-Light-Assembly/tree/main/stacktest) example program for more details on this.
+
+
 ### The MOS executable format
 
 The MOS header is stored from bytes 64 in the executable and consists of the following:
