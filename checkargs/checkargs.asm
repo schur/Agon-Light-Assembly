@@ -20,14 +20,16 @@ MAIN:
                 LD              IX,You_entered          ; print message
                 CALL            PRSTR
 
+		LD		B,1			; initialise counter
+_main1:
                 LD              DE,Buffer1              ; set DE to point to buffer
                 CALL            READ_ARG                ; read argument (from HL to DE)
-                JR              NC,noargs               ; exit if no arguments
+                JR              NC,_noargs               ; exit if no arguments
 
                 LD              IX,Arg                  ; print message
                 CALL            PRSTR
-                LD              A,'1'
-                PRT_CHR
+                LD              A,B			; B is the count of arguments 
+		CALL		Print_Hex8		; print it
                 LD              A,':'
                 PRT_CHR
                 LD              A,' '
@@ -37,28 +39,17 @@ MAIN:
                 CALL            PRSTR
                 PRT_CRLF
 
-                LD              DE,Buffer1
-                CALL            READ_ARG                ; read next argument (from HL to DE)
-                JR              NC,main_end             ; no more arguments, finish
-                LD              IX,Arg
-                CALL            PRSTR
-                LD              A,'2'
-                PRT_CHR
-                LD              A,':'
-                PRT_CHR
-                LD              A,' '
-                PRT_CHR
-                LD              IXH,D                     ; Print argument in Buffer DE
-                LD              IXL,E
-                CALL            PRSTR
-                PRT_CRLF
+		INC		B			; increment number of arguments
+                JR              _main1			; loop to next argument
 
-                JR              main_end
+_noargs:	LD		A,1			; if B still 1, then
+		CP		B			; no arguments were parsed
+		JR		NZ,_main_end
 
-noargs:         LD              IX,Nothing
-                CALL            PRSTR
+		LD              IX,Nothing		; print nothing was entered
+		CALL            PRSTR
 
-main_end:       LD              HL,0                    ;return zero to MOS
+_main_end:	LD		HL,0			;return zero to MOS
 		RET
 
 
