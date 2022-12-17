@@ -13,4 +13,4 @@ The stacktest program demonstrates this behaviour. It runs as a MOS command in Z
 - Then the value from the SPS is recalled using the POP instruction, the SPS increments, the SPL remains unaffected. 
 - Finally, the value from the SPL is recalled using the POP.L instruction, the SPL increments, the SPS remains unaffected. 
 
-![screenshot of stacktest output](stacktest/stacktest_output.jpg)
+![screenshot of stacktest output](stacktest_output.jpg)
