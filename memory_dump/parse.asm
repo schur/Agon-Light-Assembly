@@ -79,11 +79,3 @@ ASC_TO_NUMBER4:	POP.LIL		BC
 		SCF					; We have a valid number so set carry
 		RET
 
-; Convert a character to upper case
-;  A: Character to convert
-;
-UPPRC:  	AND     	7FH
-		CP      	'`'
-		RET     	C
-		AND     	5FH			; Convert to upper case
-		RET

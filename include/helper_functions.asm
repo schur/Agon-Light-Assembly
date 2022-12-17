@@ -2,7 +2,7 @@
 ; Title:	Helper Functions
 ; Author:	Dean Belfield, Reinhard Schu
 ; Created:	06/11/2022
-; Last Updated:	14/12/2022
+; Last Updated:	17/12/2022
 ;
 
         #include "../include/helper_macros.inc"
@@ -93,4 +93,90 @@ READ_ARG4:	XOR             A
                 POP		DE 	                ; restore DE
 		SCF					; We have a valid argument so set carry
 		RET
-                
+
+; Read a number and convert to binary
+; If prefixed with $, will read as hex, otherwise decimal
+;   Inputs: HL: Pointer in string buffer
+;  Outputs: DE: Value (24-bit)
+;            F: Carry set if valid number, otherwise reset
+; Destroys: A,D,E,H,L,F
+;
+AtoI:		PUSH.LIL	BC			; Preserve BC
+		LD		A,(HL)			; Read first character
+		OR		A			; Check for end of string
+		JR 		Z, _AtoI_invalid	; Return with no carry if no input
+		LD.LIL		DE,0			; Initialise DE
+		CP		'$'			; Is it prefixed with '$' (HEX number)?
+		JR		NZ, _AtoI3		; Jump to decimal parser if not
+		INC		HL			; Otherwise fall through to ASC_TO_HEX
+;
+_AtoI1:		LD		A,(HL)			; Fetch the character
+		OR		A			; Check for end of string
+		JR		Z,_AtoI_valid 
+		CALL   	 	UPPRC			; Convert to uppercase  
+		SUB		'0'			; Normalise to 0
+		JR 		C, _AtoI_invalid	; Return if < ASCII '0' (out of range)
+		CP 		10			; Check if >= 10
+		JR 		C, _AtoI2		; No, so skip next bit
+		SUB 		7			; Adjust ASCII A-F to nibble
+		CP 		16			; Check for > F
+		JR 		NC, _AtoI_invalid	; Return if out of range
+;
+_AtoI2:		PUSH		HL			; Stack HL
+		PUSH.LIL	DE			; LD HL, DE
+		POP.LIL		HL
+		ADD.LIL		HL, HL			; RXS: times 4? why not shift left?
+		ADD.LIL		HL, HL	
+		ADD.LIL		HL, HL	
+		ADD.LIL		HL, HL	
+		PUSH.LIL	HL			; LD DE, HL
+		POP.LIL		DE
+		POP		HL			; Restore HL			
+		OR      	E			; OR the new digit in to the least significant nibble
+		LD      	E, A
+;			
+		INC		HL			; Onto the next character
+		JR      	_AtoI1			; And loop
+;
+_AtoI3:		LD		A, (HL)			; Fetch the character
+		OR		A			; Check for end of string
+		JR		Z,_AtoI_valid 
+		SUB		'0'			; Normalise to 0
+		JR		C, _AtoI_invalid	; Return if < ASCII '0'
+		CP		10			; Check if >= 10
+		JR		NC, _AtoI_invalid	; Return if >= 10
+;
+		PUSH		HL			; Stack HL
+		PUSH.LIL	DE			; LD HL, DE
+		POP.LIL		HL
+		PUSH.LIL	HL			; LD BC, HL
+		POP.LIL		BC
+		ADD.LIL		HL, HL 			; x 2 
+		ADD.LIL		HL, HL 			; x 4
+		ADD.LIL		HL, BC 			; x 5
+		ADD.LIL		HL, HL 			; x 10
+		LD.LIL		BC, 0
+		LD 		C, A			; LD BCU, A
+		ADD.LIL		HL, BC			; Add BCU to HL
+		PUSH.LIL	HL			; LD DE, HL
+		POP.LIL		DE
+		POP		HL			; Restore HL
+;						
+		INC		HL			; Onto the next character
+		JR		_AtoI3			; And loop
+
+_AtoI_invalid:	SCF
+		CCF					; We have invalid input so clear carry
+		JR		_AtoI6
+_AtoI_valid:	SCF
+_AtoI6:		POP.LIL		BC			; recover BC
+		RET
+
+; Convert a character to upper case
+;  A: Character to convert
+;
+UPPRC:  	AND     	7FH
+		CP      	'`'
+		RET     	C
+		AND     	5FH			; Convert to upper case
+		RET

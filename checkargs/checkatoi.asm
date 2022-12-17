@@ -14,30 +14,27 @@
 
 ; The main routine
 ;
-; Reads up to 255 arguments from the command line, strips whitespaces and prints the arguments
+; Reads up to 2 arguments from the command line, strips whitespaces and prints the arguments
 ;
 MAIN:	        
-                LD              IX,You_entered          ; print message
-                CALL            PRSTR
-
 		LD		B,1			; initialise counter
 _main1:
                 LD              DE,Buffer1              ; set DE to point to buffer
                 CALL            READ_ARG                ; read argument (from HL to DE)
-                JR              NC,_noargs               ; exit if no arguments
+                JR              NC,_noargs              ; exit if no arguments
 
-                LD              IX,Arg                  ; print message
-                CALL            PRSTR
-                LD              A,B			; B is the count of arguments 
-		CALL		Print_Hex8		; print it
-                LD              A,':'
-                PRT_CHR
-                LD              A,' '
-                PRT_CHR
-                LD              IXH,D			; Print argument in Buffer DE
-                LD              IXL,E
-                CALL            PRSTR
+		PUSH.LIL	HL			; preserve HL (argument buffer)
+		LD		H,D			; LD HL,DF
+		LD		L,E
+		CALL		AtoI			; Convert, result in DEU
+                JR              NC,_invalid             ; exit if no arguments
+
+		PUSH.LIL	DE			; LD HL,DE
+		POP.LIL		HL
+		CALL		Print_Hex24		; Print the number
                 PRT_CRLF
+
+		POP.LIL		HL			; recover HL
 
 		INC		B			; increment number of arguments
                 JR              _main1			; loop to next argument
@@ -52,10 +49,13 @@ _noargs:	LD		A,1			; if B still 1, then
 _main_end:	LD		HL,0			;return zero to MOS
 		RET
 
+_invalid:	POP.LIL		HL			; recover HL
+		LD		HL,19			;return invalid param to MOS
+		RET
 
-You_entered:    .DB     "You entered:\n\r",0
-Nothing:        .DB     "Nothing\n\r",0
-Arg:            .DB     "Argument ",0
+
+
+Nothing:        .DB     "Nothing entered\n\r",0
 
 
 Buffer1:       
