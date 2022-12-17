@@ -2,6 +2,14 @@
 
 This is a demontration of the two separate stack pointers in the eZ80.
 
+## Installation
+
+Compile it with [spasm-ng](https://github.com/alberthdev/spasm-ng)
+
+Then put the file stacktest.bin in the /mos directory of your SD card. It can now be used like any other MOS command.
+
+## Explanation
+
 The original Z80 has one 16-bit stack pointer SP. The eZ80 has two stack pointers, a 24-bit stack pointer (SPL) and and a 16-bit stack pointer (SPS). When the CPU is running in ADL (24-bit) mode, PUSH and POP instructions will use the SPL. When the CPU is running in Z80 (16-bit) mode, PUSH/POP instructions will use the SPS, alhough the SPL can be accessed via the PUSH.L/POP.L instructions.
 
 In other words, a program running in Z80 (16-bit) mode has its own local stack pointer, usually topping at $FFFF within its 16-bit address space. 
