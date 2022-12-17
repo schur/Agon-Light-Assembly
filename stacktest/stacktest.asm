@@ -1,8 +1,8 @@
 ;
-; Title:	Hello World - Main
-; Author:	Dean Belfield, Reinhard Schu
+; Title:	Stacktest
+; Author:	Reinhard Schu
 ; Created:	06/11/2022
-; Last Updated:	11/12/2022
+; Last Updated:	17/12/2022
 
 ; define or undefine ADL (24-bit) mode
 	#undefine ADL
@@ -16,7 +16,7 @@
 ;
 MAIN:	        
 ;
-;       Test printing Hex numbers
+;       PUSH and POP values to the SPS and SPL and report the SPS and SPL values
 ;
 
 		LD		IX,text1	; print info message
