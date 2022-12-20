@@ -5,7 +5,7 @@
 ; Last Updated:	11/12/2022
 
 ; define or undefine ADL (24-bit) mode
-	#define ADL
+	#undefine ADL
 ;	#undefine ADL
 
 #include "../include/init.inc"
@@ -14,10 +14,10 @@
 
 ; The main routine
 ;
-MAIN:	        LD	        IX,HELLO_WORLD
+MAIN:
+	        LD	        IX,HELLO_WORLD
 		CALL	        PRSTR
 
-;
 ;       Test printing Hex numbers
 ;
 		LD	        A,$A7
@@ -35,3 +35,5 @@ MAIN:	        LD	        IX,HELLO_WORLD
 ; Sample text
 ;
 HELLO_WORLD:	.DB	"Hello World\n\r",0
+
+Buffer1:

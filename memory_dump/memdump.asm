@@ -3,7 +3,7 @@
 ; Author:	Dean Belfield
 ; Ported to spasm-ng: Reinhard Schu
 ; Created:	15/11/2022
-; Last Updated:	11/12/2022
+; Last Updated:	20/12/2022
 ;
 ; define or undefine ADL (24-bit) mode
 ; this program will run as a MOS command, so we use 16-bit mode
@@ -12,30 +12,50 @@
 #include "../include/init.inc"
 #include "../include/helper_functions.asm"
 #include "../include/mos_api.inc"
-#include "parse.asm"
 
 
-; Error: Invalid parameter
-;
-ERR_INVALID_PARAM:	LD		HL, 19
-			RET
+
+_variables:	.DL	$001000		; start address (default $40000)
+		.DL	256		; number of bytes to print (default 256)
 
 ; The main routine
 ; HLU: Address to parameters in string buffer (or 0 if no parameters)
 ; Returns:
 ;  HL: Error code
 ;
-MAIN:			CALL		ASC_TO_NUMBER		; Fetch the first parameter
-			JR		NC, ERR_INVALID_PARAM
-			PUSH.LIL	DE
-			CALL		ASC_TO_NUMBER		; Fetch the second parameter
-			POP.LIL		HL
-			JR		C, main1			
-			LD.LIL		DE, 256			; Default value if not specified
-main1:			CALL		Memory_Dump			
-			LD		HL, 0			; Return with OK
-			RET
-			
+MAIN:							; ensure $B0 is in IXU
+		LD		IX,_variables		; use IX to address variables in RAM
+
+		LD		B,2			; execute loop 2 times
+
+_main1:		LD		DE,Buffer		; set DE to point to buffer
+		CALL		READ_ARG		; read argument (from HL to DE)
+		JR		NC,_main2		; if no argument read, jump ahead 
+
+		PUSH.LIL	HL			; preserve HL (argument buffer)
+		EX		DE,HL			; move DE (ptr to string) to HL (input for AtoI)
+		CALL		AtoI			; Convert, result in DEU
+		POP.LIL		HL			; recover HL (argument buffer)
+		JR		Z,_invalid		; exit if invalid number
+		LD.SIL		(IX),DE			; save argument
+		LEA		IX,IX+3			; advance IX to next argument
+
+		DJNZ		_main1			; loop
+
+_main2:		
+							; ensure $B0 is in IXU
+		LD		IX,_variables
+		LD.SIL		HL,(IX)			; load start address
+		LD.SIL		DE,(IX+3)		; load number of bytes
+		CALL		Memory_Dump			
+		LD		HL, 0			; Return with OK
+		RET
+
+; Error: Invalid parameter
+;
+_invalid:	LD		HL,19			;return invalid param to MOS
+		RET
+
 ; Memory Dump
 ; HLU: Start of memory to dump
 ; DE:  Number of bytes to dump out
@@ -91,6 +111,4 @@ Memory_Dump_5:		LD		(IX+1),0Dh
 		
 ; RAM
 ; 
-			
 Buffer:
-			

@@ -2,7 +2,7 @@
 ; Title:	Helper Functions
 ; Author:	Dean Belfield, Reinhard Schu
 ; Created:	06/11/2022
-; Last Updated:	17/12/2022
+; Last Updated:	20/12/2022
 ;
 
         #include "../include/helper_macros.inc"
@@ -54,7 +54,7 @@ prtnbl:		AND	0Fh
 		RET
 
 ; Skip whitespaces
-; HL: Pointer in string buffer
+; HLU: Pointer in string buffer
 ; 
 SKIPSP:		LD.LIL		A, (HL)
 		CP      	' '
@@ -73,7 +73,7 @@ SKIPSP:		LD.LIL		A, (HL)
 ; 
 
 READ_ARG:	CALL		SKIPSP			; Skip whitespace
-		LD.LIL		A,(HL)			; Read first character
+		LD.LIL		A,(HL)			; Fetch first character
 		OR		A			; Check for end of string
 		RET		Z			; Return with no carry if not
 		PUSH    	DE			; Preserve DE
@@ -85,7 +85,7 @@ READ_ARG1:      LD.LIL		A,(HL)			; Fetch the character
                 JR              Z,READ_ARG4             ; end of argument, finish
                 LD              (DE),A                  ; store the character
 		INC.LIL		HL			; next charcater 
-                INC     	DE
+                INC		DE
                 JR              READ_ARG1
 
 READ_ARG4:	XOR             A
@@ -94,17 +94,20 @@ READ_ARG4:	XOR             A
 		SCF					; We have a valid argument so set carry
 		RET
 
-; Read a number and convert to binary
+; Read a number aqs a string and convert to binary (int)
 ; If prefixed with $, will read as hex, otherwise decimal
 ;   Inputs: HL: Pointer in string buffer
 ;  Outputs: DE: Value (24-bit)
-;            F: Carry set if valid number, otherwise reset
+;            F: Zero reset if valid number, otherwise set
 ; Destroys: A,D,E,H,L,F
 ;
-AtoI:		PUSH.LIL	BC			; Preserve BC
+AtoI:		PUSH		IX			; Preserve IX
+		PUSH.LIL	BC			; Preserve BC
+		LD		IX,_AtoI_flags		; start assuming invalid number,
+		RES		0,(IX)			; so reset "valid number" flag
 		LD		A,(HL)			; Read first character
 		OR		A			; Check for end of string
-		JR 		Z, _AtoI_invalid	; Return with no carry if no input
+		JR 		Z, _AtoI_end		; Return if no input
 		LD.LIL		DE,0			; Initialise DE
 		CP		'$'			; Is it prefixed with '$' (HEX number)?
 		JR		NZ, _AtoI3		; Jump to decimal parser if not
@@ -112,7 +115,7 @@ AtoI:		PUSH.LIL	BC			; Preserve BC
 ;
 _AtoI1:		LD		A,(HL)			; Fetch the character
 		OR		A			; Check for end of string
-		JR		Z,_AtoI_valid 
+		JR		Z,_AtoI_end
 		CALL   	 	UPPRC			; Convert to uppercase  
 		SUB		'0'			; Normalise to 0
 		JR 		C, _AtoI_invalid	; Return if < ASCII '0' (out of range)
@@ -122,7 +125,8 @@ _AtoI1:		LD		A,(HL)			; Fetch the character
 		CP 		16			; Check for > F
 		JR 		NC, _AtoI_invalid	; Return if out of range
 ;
-_AtoI2:		PUSH		HL			; Stack HL
+_AtoI2:		SET		0,(IX)			; set "valid number" flag
+		PUSH		HL			; Stack HL
 		PUSH.LIL	DE			; LD HL, DE
 		POP.LIL		HL
 		ADD.LIL		HL, HL			; RXS: times 4? why not shift left?
@@ -140,12 +144,13 @@ _AtoI2:		PUSH		HL			; Stack HL
 ;
 _AtoI3:		LD		A, (HL)			; Fetch the character
 		OR		A			; Check for end of string
-		JR		Z,_AtoI_valid 
+		JR		Z,_AtoI_end
 		SUB		'0'			; Normalise to 0
 		JR		C, _AtoI_invalid	; Return if < ASCII '0'
 		CP		10			; Check if >= 10
 		JR		NC, _AtoI_invalid	; Return if >= 10
-;
+
+		SET		0,(IX)			; set "valid number" flag
 		PUSH		HL			; Stack HL
 		PUSH.LIL	DE			; LD HL, DE
 		POP.LIL		HL
@@ -165,18 +170,21 @@ _AtoI3:		LD		A, (HL)			; Fetch the character
 		INC		HL			; Onto the next character
 		JR		_AtoI3			; And loop
 
-_AtoI_invalid:	SCF
-		CCF					; We have invalid input so clear carry
-		JR		_AtoI6
-_AtoI_valid:	SCF
-_AtoI6:		POP.LIL		BC			; recover BC
+_AtoI_invalid:	RES		0,(IX)			; reset "valid number" flag
+_AtoI_end:	POP.LIL		BC			; recover BC
+		BIT		0,(IX)			; transfer "valid number" bit to Z flag
+		POP		IX			; recover IX
 		RET
+
+_AtoI_flags:	.DB		0			; storage for flags 
 
 ; Convert a character to upper case
 ;  A: Character to convert
 ;
-UPPRC:  	AND     	7FH
-		CP      	'`'
+UPPRC:  	AND     	$7F
+		CP      	'a'			; check range
 		RET     	C
-		AND     	5FH			; Convert to upper case
+		CP      	'{'			; check range
+		RET     	NC
+		AND     	$5F			; Convert to upper case
 		RET

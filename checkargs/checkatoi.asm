@@ -2,7 +2,7 @@
 ; Title:	Checkargs - Main
 ; Author:	Reinhard Schu
 ; Created:	12/12/2022
-; Last Updated:	17/12/2022
+; Last Updated:	20/12/2022
 
 ; define or undefine ADL (24-bit) mode
 	#undefine ADL
@@ -14,27 +14,27 @@
 
 ; The main routine
 ;
-; Reads up to 2 arguments from the command line, strips whitespaces and prints the arguments
+; Reads arguments from the command line, converts them to hex and prints them
 ;
 MAIN:	        
 		LD		B,1			; initialise counter
 _main1:
                 LD              DE,Buffer1              ; set DE to point to buffer
                 CALL            READ_ARG                ; read argument (from HL to DE)
-                JR              NC,_noargs              ; exit if no arguments
+                JR              NC,_noargs              ; exit if no more arguments
 
 		PUSH.LIL	HL			; preserve HL (argument buffer)
 		LD		H,D			; LD HL,DF
 		LD		L,E
 		CALL		AtoI			; Convert, result in DEU
-                JR              NC,_invalid             ; exit if no arguments
+                JR              Z,_invalid		; exit if invalid number
 
 		PUSH.LIL	DE			; LD HL,DE
 		POP.LIL		HL
 		CALL		Print_Hex24		; Print the number
                 PRT_CRLF
 
-		POP.LIL		HL			; recover HL
+		POP.LIL		HL			; recover HL (argument buffer)
 
 		INC		B			; increment number of arguments
                 JR              _main1			; loop to next argument
@@ -49,7 +49,7 @@ _noargs:	LD		A,1			; if B still 1, then
 _main_end:	LD		HL,0			;return zero to MOS
 		RET
 
-_invalid:	POP.LIL		HL			; recover HL
+_invalid:	POP.LIL		HL			; recover HL (argument buffer)
 		LD		HL,19			;return invalid param to MOS
 		RET
 
