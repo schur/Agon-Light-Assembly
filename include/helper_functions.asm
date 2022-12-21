@@ -101,7 +101,7 @@ READ_ARG4:	XOR             A
 ;            F: Zero reset if valid number, otherwise set
 ; Destroys: A,D,E,H,L,F
 ;
-AtoI:		PUSH		IX			; Preserve IX
+AtoI:		PUSH.LIL	IX			; Preserve IX
 		PUSH.LIL	BC			; Preserve BC
 		LD		IX,_AtoI_flags		; start assuming invalid number,
 		RES		0,(IX)			; so reset "valid number" flag
@@ -127,14 +127,12 @@ _AtoI1:		LD		A,(HL)			; Fetch the character
 ;
 _AtoI2:		SET		0,(IX)			; set "valid number" flag
 		PUSH		HL			; Stack HL
-		PUSH.LIL	DE			; LD HL, DE
-		POP.LIL		HL
+		EX.LIL		DE,HL			; LD HL, DE
 		ADD.LIL		HL, HL			; RXS: times 4? why not shift left?
 		ADD.LIL		HL, HL	
 		ADD.LIL		HL, HL	
 		ADD.LIL		HL, HL	
-		PUSH.LIL	HL			; LD DE, HL
-		POP.LIL		DE
+		EX.LIL		DE,HL			; LD HL, DE
 		POP		HL			; Restore HL			
 		OR      	E			; OR the new digit in to the least significant nibble
 		LD      	E, A
@@ -152,8 +150,7 @@ _AtoI3:		LD		A, (HL)			; Fetch the character
 
 		SET		0,(IX)			; set "valid number" flag
 		PUSH		HL			; Stack HL
-		PUSH.LIL	DE			; LD HL, DE
-		POP.LIL		HL
+		EX.LIL		DE,HL			; LD HL, DE
 		PUSH.LIL	HL			; LD BC, HL
 		POP.LIL		BC
 		ADD.LIL		HL, HL 			; x 2 
@@ -163,8 +160,7 @@ _AtoI3:		LD		A, (HL)			; Fetch the character
 		LD.LIL		BC, 0
 		LD 		C, A			; LD BCU, A
 		ADD.LIL		HL, BC			; Add BCU to HL
-		PUSH.LIL	HL			; LD DE, HL
-		POP.LIL		DE
+		EX.LIL		DE,HL			; LD DE, HL
 		POP		HL			; Restore HL
 ;						
 		INC		HL			; Onto the next character
@@ -173,7 +169,7 @@ _AtoI3:		LD		A, (HL)			; Fetch the character
 _AtoI_invalid:	RES		0,(IX)			; reset "valid number" flag
 _AtoI_end:	POP.LIL		BC			; recover BC
 		BIT		0,(IX)			; transfer "valid number" bit to Z flag
-		POP		IX			; recover IX
+		POP.LIL		IX			; recover IX
 		RET
 
 _AtoI_flags:	.DB		0			; storage for flags 

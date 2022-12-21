@@ -15,7 +15,7 @@
 
 
 
-_variables:	.DL	$001000		; start address (default $40000)
+_variables:	.DL	$040000		; start address (default $40000)
 		.DL	256		; number of bytes to print (default 256)
 
 ; The main routine
@@ -23,8 +23,14 @@ _variables:	.DL	$001000		; start address (default $40000)
 ; Returns:
 ;  HL: Error code
 ;
-MAIN:							; ensure $B0 is in IXU
-		LD		IX,_variables		; use IX to address variables in RAM
+MAIN:		LD		IX,_variables		; use IX to address variables in RAM
+		PUSH.LIL	IX			; push lower 16-bit of _variables address 
+		LD		A,MB			; fetch MB register (upper byte of address page we are running in)
+		LD.LIL		IY,0
+		ADD.LIL		IY,SP
+		LD.LIL		(IY+2),A		; write MB to upper byte on stack
+		POP.LIL		IX			; retrieve full 24-bit address of _variables into IXU
+		PUSH.LIL	IX			; preserve IXU for later
 
 		LD		B,2			; execute loop 2 times
 
@@ -37,23 +43,23 @@ _main1:		LD		DE,Buffer		; set DE to point to buffer
 		CALL		AtoI			; Convert, result in DEU
 		POP.LIL		HL			; recover HL (argument buffer)
 		JR		Z,_invalid		; exit if invalid number
-		LD.SIL		(IX),DE			; save argument
-		LEA		IX,IX+3			; advance IX to next argument
+		LD.LIL		(IX),DE			; save argument
+		LEA.LIL		IX,IX+3			; advance IX to next argument
 
 		DJNZ		_main1			; loop
 
 _main2:		
-							; ensure $B0 is in IXU
-		LD		IX,_variables
-		LD.SIL		HL,(IX)			; load start address
-		LD.SIL		DE,(IX+3)		; load number of bytes
+		POP.LIL		IX			; recover full 24-bit variable address
+		LD.LIL		HL,(IX)			; load start address
+		LD.LIL		DE,(IX+3)		; load number of bytes
 		CALL		Memory_Dump			
 		LD		HL, 0			; Return with OK
 		RET
 
 ; Error: Invalid parameter
 ;
-_invalid:	LD		HL,19			;return invalid param to MOS
+_invalid:	POP.LIL		IX			; readjust SPL stack
+		LD		HL,19			; return invalid param to MOS
 		RET
 
 ; Memory Dump

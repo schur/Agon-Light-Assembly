@@ -24,13 +24,11 @@ _main1:
                 JR              NC,_noargs              ; exit if no more arguments
 
 		PUSH.LIL	HL			; preserve HL (argument buffer)
-		LD		H,D			; LD HL,DF
-		LD		L,E
+		EX		DE,HL			; move DE (ptr to output from READ_ARG) to HL
 		CALL		AtoI			; Convert, result in DEU
                 JR              Z,_invalid		; exit if invalid number
 
-		PUSH.LIL	DE			; LD HL,DE
-		POP.LIL		HL
+		EX.LIL		DE,HL			; move DE (output from AtoI) to HL
 		CALL		Print_Hex24		; Print the number
                 PRT_CRLF
 
