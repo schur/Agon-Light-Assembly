@@ -45,7 +45,7 @@ If you would like to write your own programs, feel free to use the [include file
 
 In ADL mode, the program is aware of the full address space. The Agon MOS loads programs by default to address $40000, so if ADL mode is set (#define ADL), the init.asm include file will set the .org $40000 directive.
 
-In Z80 legacy mode, the program will, from its point of view, be located from address $0000.  The program will have the 16-bit address space to $FFFF available to itself.
+In Z80 legacy mode, the program will, from its point of view, be located from address $0000.  The program will have 32kb of address space to $7FFF available to itself. Note, the SPS stack expands downwards from $7FFF, so if your assembled code is very large, you need to make sure it doesn't clas with the stack. 
 
 ### Assembling as MOS (*) commands
 
