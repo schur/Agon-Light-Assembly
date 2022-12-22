@@ -16,7 +16,7 @@
 
 
 _variables:	.DL	$040000		; start address (default $40000)
-		.DL	256		; number of bytes to print (default 256)
+		.DL	$100		; number of bytes to print (default 256)
 
 ; The main routine
 ; HLU: Address to parameters in string buffer (or 0 if no parameters)
@@ -39,12 +39,12 @@ _main1:		LD		DE,Buffer		; set DE to point to buffer
 		JR		NC,_main2		; if no argument read, jump ahead 
 
 		PUSH.LIL	HL			; preserve HL (argument buffer)
-		EX		DE,HL			; move DE (ptr to string) to HL (input for AtoI)
-		CALL		AtoI			; Convert, result in DEU
+		EX		DE,HL			; move DE (ptr to parsed ergument) to HL (input for AtoI)
+		CALL		AtoI			; Convert to hex, result in DEU
 		POP.LIL		HL			; recover HL (argument buffer)
 		JR		Z,_invalid		; exit if invalid number
-		LD.LIL		(IX),DE			; save argument
-		LEA.LIL		IX,IX+3			; advance IX to next argument
+		LD.LIL		(IX),DE			; save argument in RAM variable 
+		LEA.LIL		IX,IX+3			; advance IX to next RAM variable
 
 		DJNZ		_main1			; loop
 
@@ -53,6 +53,11 @@ _main2:
 		LD.LIL		HL,(IX)			; load start address
 		LD.LIL		DE,(IX+3)		; load number of bytes
 		CALL		Memory_Dump			
+
+							; could add more functionality here, such as 
+							; loop to wait and read line input
+							; and respond to input, e.g. dump next segment, change address, go back, exit, etc.
+
 		LD		HL, 0			; Return with OK
 		RET
 
@@ -108,9 +113,9 @@ Memory_Dump_4:		PRT_CHR
 			PRT_CHR
 			DJNZ		Memory_Dump_4
 ;
-Memory_Dump_5:		LD		(IX+1),0Dh
-			LD		(IX+2),0Ah
-			LD		(IX+3),00h
+Memory_Dump_5:		LD		(IX+1),'\r'
+			LD		(IX+2),'\n'
+			LD		(IX+3),0
 			LD		IX, Buffer
 			CALL		PRSTR
 			RET
