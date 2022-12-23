@@ -1,0 +1,485 @@
+    1 00:0000 -  -  -  -  ;
+    2 00:0000 -  -  -  -  ; Title:	Hello World - Main
+    3 00:0000 -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:0000 -  -  -  -  ; Created:	06/11/2022
+    5 00:0000 -  -  -  -  ; Last Updated:	11/12/2022
+    6 00:0000 -  -  -  -  
+    7 00:0000 -  -  -  -  ; define or undefine ADL (24-bit) mode
+    8 00:0000 -  -  -  -  	#undefine ADL
+    9 00:0000 -  -  -  -  ;	#undefine ADL
+   10 00:0000 -  -  -  -  
+   11 00:0000 -  -  -  -  #include "../include/init.inc"
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/init.inc"
+    1 00:0000 -  -  -  -  ;
+    2 00:0000 -  -  -  -  ; Title:	Initialisation Code
+    3 00:0000 -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:0000 -  -  -  -  ; Created:	06/11/2022
+    5 00:0000 -  -  -  -  ; Last Updated:	16/12/2022
+    6 00:0000 -  -  -  -  ;
+    7 00:0000 -  -  -  -  
+    8 00:0000 -  -  -  -  #ifdef ADL
+    9 00:0000             		; Start in ADL mode
+   10 00:0000             		.ASSUME	ADL = 1
+   11 00:0000             		; Set Code location to $40000 (MOS default user RAM)
+   12 00:0000             		.ORG $40000
+   13 00:0000             #else
+   14 00:0000 -  -  -  -  		.ASSUME	ADL = 0
+   15 00:0000 -  -  -  -  		; Set Code location to $0000 (as we are in 16-bit mode)
+   16 00:0000 -  -  -  -  		.ORG $0000
+   17 00:0000 -  -  -  -  #endif
+   18 00:0000 18 43 -  -  		JR		_START		; Jump to start
+   19 00:0002 00 00 00 00 
+              00 00 -  -  		.BLOCK	6
+   20 00:0008 -  -  -  -  
+   21 00:0008 -  -  -  -  #ifdef ADL
+   22 00:0008             		; if in ADL (24-bit) mode, fill; with 0 up to byte $40 (MOS header)
+   23 00:0008             		.BLOCK $38
+   24 00:0008             #else
+   25 00:0008 -  -  -  -  		; set RST vectors if in Z80 compatibility (16-bit) mode
+   26 00:0008 -  -  -  -  		; which will call the "real" RST vector
+   27 00:0008 -  -  -  -  
+   28 00:0008 49 CF -  -  RST_08:		RST.LIS	08h		; API call
+   29 00:000A C9 -  -  -  		RET
+   30 00:000B 00 00 00 00 
+              00 -  -  -  		.BLOCK	5
+   31 00:0010 -  -  -  -  			
+   32 00:0010 49 D7 -  -  RST_10:		RST.LIS	10h		; Output
+   33 00:0012 C9 -  -  -  		RET
+   34 00:0013 00 00 00 00 
+              00 -  -  -  		.BLOCK	5
+   35 00:0018 -  -  -  -  			
+   36 00:0018 00 00 00 00 
+              00 00 00 00 RST_18:		.BLOCK	8
+   37 00:0020 00 00 00 00 
+              00 00 00 00 RST_20:		.BLOCK	8
+   38 00:0028 00 00 00 00 
+              00 00 00 00 RST_28:		.BLOCK	8
+   39 00:0030 00 00 00 00 
+              00 00 00 00 RST_30:		.BLOCK	8	
+   40 00:0038 -  -  -  -  ;	
+   41 00:0038 -  -  -  -  ; The NMI interrupt vector (not currently used by AGON)
+   42 00:0038 -  -  -  -  ;
+   43 00:0038 FB -  -  -  RST_38:		EI
+   44 00:0039 ED 4D -  -  		RETI
+   45 00:003B 00 00 00 00 
+              00 -  -  -  		.BLOCK  5
+   46 00:0040 -  -  -  -  #endif
+   47 00:0040 -  -  -  -  
+   48 00:0040 -  -  -  -  ; The header stuff is from byte $40 onwards
+   49 00:0040 -  -  -  -  
+   50 00:0040 4D 4F 53 -                  .DB	"MOS"	; Flag for MOS - to confirm this is a valid MOS command
+   51 00:0043 00 -  -  -  		.DB	0		; MOS header version 0
+   52 00:0044 -  -  -  -  #ifdef ADL
+   53 00:0044             		.DB	1		; Flag for run mode (0: Z80, 1: ADL)
+   54 00:0044             #else
+   55 00:0044 00 -  -  -  		.DB	0
+   56 00:0045 -  -  -  -  #endif
+   57 00:0045 -  -  -  -  ;
+   58 00:0045 -  -  -  -  ; And the code follows on immediately after the header
+   59 00:0045 -  -  -  -  ;
+   60 00:0045 -  -  -  -  _START:
+   61 00:0045 -  -  -  -  #ifndef ADL                             ; if we are compiled in Z80 mode
+   62 00:0045 ED 6E -  -                  LD      A,MB            ; load the Mbase register into A
+   63 00:0047 FE 0B -  -                  CP      $0B             ; are we running as a MOS command?
+   64 00:0049 20 0C -  -                  JR      NZ,_START1      ; if not, jump ahead
+   65 00:004B -  -  -  -  
+   66 00:004B DD 21 00 00                 LD      IX,0
+   67 00:004F DD 39 -  -                  ADD     IX,SP           ; push SPS 
+   68 00:0051 49 DD E5 -                  PUSH.LIS IX             ; to SPL stack
+   69 00:0054 31 FE 7F -                  LD      SP,$7FFE        ; set SP to top of 32kb ram for MOS commands
+   70 00:0057 -  -  -  -  
+   71 00:0057 49 F5 -  -  _START1:        PUSH.L  AF              ; push Mbase register (still in A from above) onto SPL stack                
+   72 00:0059 -  -  -  -  #endif
+   73 00:0059 FB -  -  -  	        EI			; Enable the MOS interrupts
+   74 00:005A CD 56 01 -  		CALL	MAIN	        ; Start user code
+   75 00:005D -  -  -  -  
+   76 00:005D -  -  -  -                                          ; returning back from user code
+   77 00:005D -  -  -  -  #ifndef ADL                             ; if we are compiled in Z80 mode
+   78 00:005D 49 F1 -  -                  POP.L   AF              ; pull Mbase register back
+   79 00:005F FE 0B -  -                  CP      $0B             ; were we running as a MOS command?
+   80 00:0061 20 06 -  -                  JR      NZ,_START2      ; if not, jump ahead
+   81 00:0063 49 DD E1 -                  POP.LIS IX              ; pull SPS back from SPL stack
+   82 00:0066 40 DD F9 -                  LD.SIS  SP,IX           ; restore previous SPS
+   83 00:0069 -  -  -  -  #endif
+   84 00:0069 -  -  -  -  _START2:        
+   85 00:0069 -  -  -  -  #ifdef ADL
+   86 00:0069             		RET
+   87 00:0069             #else
+   88 00:0069 49 C9 -  -  		RET.L
+   89 00:006B -  -  -  -  #endif
+Listing for file "extest.asm"
+   12 00:006B -  -  -  -  #include "../include/helper_functions.asm"
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/helper_functions.asm"
+    1 00:006B -  -  -  -  ;
+    2 00:006B -  -  -  -  ; Title:	Helper Functions
+    3 00:006B -  -  -  -  ; Author:	Dean Belfield, Reinhard Schu
+    4 00:006B -  -  -  -  ; Created:	06/11/2022
+    5 00:006B -  -  -  -  ; Last Updated:	20/12/2022
+    6 00:006B -  -  -  -  ;
+    7 00:006B -  -  -  -  
+    8 00:006B -  -  -  -          #include "../include/helper_macros.inc"
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/helper_macros.inc"
+    1 00:006B -  -  -  -  ;
+    2 00:006B -  -  -  -  ; Title:	Helper Macros
+    3 00:006B -  -  -  -  ; Author:	Reinhard Schu
+    4 00:006B -  -  -  -  ; Created:	13/12/2022
+    5 00:006B -  -  -  -  ; Last Updated:	13/12/2022
+    6 00:006B -  -  -  -  ;
+    7 00:006B -  -  -  -  
+    8 00:006B -  -  -  -  ; Print character in A
+    9 00:006B -  -  -  -  ;
+   10 00:006B -  -  -  -  #MACRO  PRT_CHR
+   11 00:006B             #ifdef ADL
+   12 00:006B             		RST.LIL	$10
+   13 00:006B             #else
+   14 00:006B             		RST	$10
+   15 00:006B             #endif
+   16 00:006B             #ENDMACRO
+   17 00:006B -  -  -  -  
+   18 00:006B -  -  -  -  ; Print LF+CR
+   19 00:006B -  -  -  -  ;
+   20 00:006B -  -  -  -  #MACRO  PRT_CRLF
+   21 00:006B                             LD      A,'\n'
+   22 00:006B                             PRT_CHR
+   23 00:006B                             LD      A,'\r'
+   24 00:006B                             PRT_CHR
+   25 00:006B             #ENDMACRO
+   26 00:006B -  -  -  -  
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/helper_functions.asm"
+    9 00:006B -  -  -  -  
+   10 00:006B -  -  -  -  ; Print a zero-terminated string
+   11 00:006B -  -  -  -  ; IX: pointer to string
+   12 00:006B -  -  -  -  ; destroys: IX, A
+   13 00:006B -  -  -  -  ;
+   14 00:006B DD 7E 00 -  PRSTR:		LD		A,(IX)
+   15 00:006E B7 -  -  -  		OR		A	
+   16 00:006F C8 -  -  -  		RET		Z		; finish if zero
+   17 00:0070 D7 -  -  -                  PRT_CHR
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/helper_functions.asm"
+   18 00:0071 DD 23 -  -  		INC		IX
+   19 00:0073 18 F6 -  -  		JR		PRSTR		; loop around to next byte
+   20 00:0075 -  -  -  -  
+   21 00:0075 -  -  -  -  ; Print a 24-bit HEX number
+   22 00:0075 -  -  -  -  ; HLU: Number to print
+   23 00:0075 -  -  -  -  ;
+   24 00:0075 5B E5 -  -  Print_Hex24:	PUSH.LIL	HL
+   25 00:0077 5B 21 02 00 
+              00 -  -  -  		LD.LIL		HL, 2
+   26 00:007C 5B 39 -  -  		ADD.LIL		HL, SP
+   27 00:007E 5B 7E -  -  		LD.LIL		A, (HL)
+   28 00:0080 5B E1 -  -  		POP.LIL		HL
+   29 00:0082 CD 8C 00 00 		CALL		Print_Hex8			
+   30 00:0086 -  -  -  -  			
+   31 00:0086 -  -  -  -  ; Print a 16-bit HEX number
+   32 00:0086 -  -  -  -  ; HL: Number to print
+   33 00:0086 -  -  -  -  ;
+   34 00:0086 7C -  -  -  Print_Hex16:	LD	A,H
+   35 00:0087 CD 8C 00 00 		CALL	Print_Hex8
+   36 00:008B 7D -  -  -  		LD	A,L
+   37 00:008C -  -  -  -  
+   38 00:008C -  -  -  -  ; Print an 8-bit HEX number
+   39 00:008C -  -  -  -  ; A: Number to print
+   40 00:008C -  -  -  -  ;
+   41 00:008C 4F -  -  -  Print_Hex8:	LD	C,A
+   42 00:008D 1F -  -  -  		RRA 
+   43 00:008E 1F -  -  -  		RRA 
+   44 00:008F 1F -  -  -  		RRA 
+   45 00:0090 1F -  -  -  		RRA 
+   46 00:0091 CD 96 00 00 		CALL	prtnbl 
+   47 00:0095 79 -  -  -  		LD	A,C 
+   48 00:0096 E6 0F -  -  prtnbl:		AND	0Fh
+   49 00:0098 C6 90 -  -  		ADD	A,90h
+   50 00:009A 27 -  -  -  		DAA
+   51 00:009B CE 40 -  -  		ADC	A,40h
+   52 00:009D 27 -  -  -  		DAA
+   53 00:009E D7 -  -  -  		PRT_CHR
+   54 00:009F C9 -  -  -  		RET
+   55 00:00A0 -  -  -  -  
+   56 00:00A0 -  -  -  -  ; Skip whitespaces
+   57 00:00A0 -  -  -  -  ; HLU: Pointer in string buffer
+   58 00:00A0 -  -  -  -  ; 
+   59 00:00A0 5B 7E -  -  SKIPSP:		LD.LIL		A, (HL)
+   60 00:00A2 FE 20 -  -  		CP      	' '
+   61 00:00A4 C0 -  -  -  		RET     	NZ
+   62 00:00A5 5B 23 -  -  		INC.LIL		HL
+   63 00:00A7 18 F7 -  -  		JR      	SKIPSP
+   64 00:00A9 -  -  -  -  
+   65 00:00A9 -  -  -  -  
+   66 00:00A9 -  -  -  -  ; Read next argument from buffer 
+   67 00:00A9 -  -  -  -  ; Inputs:   HL: Pointer in string buffer
+   68 00:00A9 -  -  -  -  ;           DE: Pointer to Buffer where to copy argument
+   69 00:00A9 -  -  -  -  ; Outputs:  HL: Updated pointer in string buffer
+   70 00:00A9 -  -  -  -  ;           DE: Pointer to Buffer argument was copied to (preserved from input)
+   71 00:00A9 -  -  -  -  ;            F: Carry set if argument read, otherwise reset
+   72 00:00A9 -  -  -  -  ; Destroys: A,H,L,F;
+   73 00:00A9 -  -  -  -  ; 
+   74 00:00A9 -  -  -  -  
+   75 00:00A9 CD A0 00 00 READ_ARG:	CALL		SKIPSP			; Skip whitespace
+   76 00:00AD 5B 7E -  -  		LD.LIL		A,(HL)			; Fetch first character
+   77 00:00AF B7 -  -  -  		OR		A			; Check for end of string
+   78 00:00B0 C8 -  -  -  		RET		Z			; Return with no carry if not
+   79 00:00B1 D5 -  -  -  		PUSH    	DE			; Preserve DE
+   80 00:00B2 -  -  -  -  
+   81 00:00B2 5B 7E -  -  READ_ARG1:      LD.LIL		A,(HL)			; Fetch the character
+   82 00:00B4 B7 -  -  -                  OR              A                       ; Check for end of string
+   83 00:00B5 28 0A -  -                  JR              Z,READ_ARG4             ; end of argument, finish
+   84 00:00B7 FE 20 -  -                  CP              ' '                     ; if whitespace
+   85 00:00B9 28 06 -  -                  JR              Z,READ_ARG4             ; end of argument, finish
+   86 00:00BB 12 -  -  -                  LD              (DE),A                  ; store the character
+   87 00:00BC 5B 23 -  -  		INC.LIL		HL			; next charcater 
+   88 00:00BE 13 -  -  -                  INC		DE
+   89 00:00BF 18 F1 -  -                  JR              READ_ARG1
+   90 00:00C1 -  -  -  -  
+   91 00:00C1 AF -  -  -  READ_ARG4:	XOR             A
+   92 00:00C2 12 -  -  -                  LD              (DE),A                  ; terminate output buffer
+   93 00:00C3 D1 -  -  -                  POP		DE 	                ; restore DE
+   94 00:00C4 37 -  -  -  		SCF					; We have a valid argument so set carry
+   95 00:00C5 C9 -  -  -  		RET
+   96 00:00C6 -  -  -  -  
+   97 00:00C6 -  -  -  -  ; Read a number aqs a string and convert to binary (int)
+   98 00:00C6 -  -  -  -  ; If prefixed with $, will read as hex, otherwise decimal
+   99 00:00C6 -  -  -  -  ;   Inputs: HL: Pointer in string buffer
+  100 00:00C6 -  -  -  -  ;  Outputs: DE: Value (24-bit)
+  101 00:00C6 -  -  -  -  ;            F: Zero reset if valid number, otherwise set
+  102 00:00C6 -  -  -  -  ; Destroys: A,D,E,H,L,F
+  103 00:00C6 -  -  -  -  ;
+  104 00:00C6 5B DD E5 -  AtoI:		PUSH.LIL	IX			; Preserve IX
+  105 00:00C9 5B C5 -  -  		PUSH.LIL	BC			; Preserve BC
+  106 00:00CB DD 21 4A 01 
+              00 -  -  -  		LD		IX,_AtoI_flags		; start assuming invalid number,
+  107 00:00D0 DD CB 00 86 		RES		0,(IX)			; so reset "valid number" flag
+  108 00:00D4 7E -  -  -  		LD		A,(HL)			; Read first character
+  109 00:00D5 B7 -  -  -  		OR		A			; Check for end of string
+  110 00:00D6 28 68 -  -  		JR 		Z, _AtoI_end		; Return if no input
+  111 00:00D8 5B 11 00 00 
+              00 -  -  -  		LD.LIL		DE,0			; Initialise DE
+  112 00:00DD FE 24 -  -  		CP		'$'			; Is it prefixed with '$' (HEX number)?
+  113 00:00DF 20 2E -  -  		JR		NZ, _AtoI3		; Jump to decimal parser if not
+  114 00:00E1 23 -  -  -  		INC		HL			; Otherwise fall through to ASC_TO_HEX
+  115 00:00E2 -  -  -  -  ;
+  116 00:00E2 7E -  -  -  _AtoI1:		LD		A,(HL)			; Fetch the character
+  117 00:00E3 B7 -  -  -  		OR		A			; Check for end of string
+  118 00:00E4 28 5A -  -  		JR		Z,_AtoI_end
+  119 00:00E6 CD 4B 01 00 		CALL   	 	UPPRC			; Convert to uppercase  
+  120 00:00EA D6 30 -  -  		SUB		'0'			; Normalise to 0
+  121 00:00EC 38 4E -  -  		JR 		C, _AtoI_invalid	; Return if < ASCII '0' (out of range)
+  122 00:00EE FE 0A -  -  		CP 		10			; Check if >= 10
+  123 00:00F0 38 06 -  -  		JR 		C, _AtoI2		; No, so skip next bit
+  124 00:00F2 D6 07 -  -  		SUB 		7			; Adjust ASCII A-F to nibble
+  125 00:00F4 FE 10 -  -  		CP 		16			; Check for > F
+  126 00:00F6 30 44 -  -  		JR 		NC, _AtoI_invalid	; Return if out of range
+  127 00:00F8 -  -  -  -  ;
+  128 00:00F8 DD CB 00 C6 _AtoI2:		SET		0,(IX)			; set "valid number" flag
+  129 00:00FC E5 -  -  -  		PUSH		HL			; Stack HL
+  130 00:00FD 5B EB -  -  		EX.LIL		DE,HL			; LD HL, DE
+  131 00:00FF 5B 29 -  -  		ADD.LIL		HL, HL			; RXS: times 4? why not shift left?
+  132 00:0101 5B 29 -  -  		ADD.LIL		HL, HL	
+  133 00:0103 5B 29 -  -  		ADD.LIL		HL, HL	
+  134 00:0105 5B 29 -  -  		ADD.LIL		HL, HL	
+  135 00:0107 5B EB -  -  		EX.LIL		DE,HL			; LD HL, DE
+  136 00:0109 E1 -  -  -  		POP		HL			; Restore HL			
+  137 00:010A B3 -  -  -  		OR      	E			; OR the new digit in to the least significant nibble
+  138 00:010B 5F -  -  -  		LD      	E, A
+  139 00:010C -  -  -  -  ;			
+  140 00:010C 23 -  -  -  		INC		HL			; Onto the next character
+  141 00:010D 18 D3 -  -  		JR      	_AtoI1			; And loop
+  142 00:010F -  -  -  -  ;
+  143 00:010F 7E -  -  -  _AtoI3:		LD		A, (HL)			; Fetch the character
+  144 00:0110 B7 -  -  -  		OR		A			; Check for end of string
+  145 00:0111 28 2D -  -  		JR		Z,_AtoI_end
+  146 00:0113 D6 30 -  -  		SUB		'0'			; Normalise to 0
+  147 00:0115 38 25 -  -  		JR		C, _AtoI_invalid	; Return if < ASCII '0'
+  148 00:0117 FE 0A -  -  		CP		10			; Check if >= 10
+  149 00:0119 30 21 -  -  		JR		NC, _AtoI_invalid	; Return if >= 10
+  150 00:011B -  -  -  -  
+  151 00:011B DD CB 00 C6 		SET		0,(IX)			; set "valid number" flag
+  152 00:011F E5 -  -  -  		PUSH		HL			; Stack HL
+  153 00:0120 5B EB -  -  		EX.LIL		DE,HL			; LD HL, DE
+  154 00:0122 5B E5 -  -  		PUSH.LIL	HL			; LD BC, HL
+  155 00:0124 5B C1 -  -  		POP.LIL		BC
+  156 00:0126 5B 29 -  -  		ADD.LIL		HL, HL 			; x 2 
+  157 00:0128 5B 29 -  -  		ADD.LIL		HL, HL 			; x 4
+  158 00:012A 5B 09 -  -  		ADD.LIL		HL, BC 			; x 5
+  159 00:012C 5B 29 -  -  		ADD.LIL		HL, HL 			; x 10
+  160 00:012E 5B 01 00 00 
+              00 -  -  -  		LD.LIL		BC, 0
+  161 00:0133 4F -  -  -  		LD 		C, A			; LD BCU, A
+  162 00:0134 5B 09 -  -  		ADD.LIL		HL, BC			; Add BCU to HL
+  163 00:0136 5B EB -  -  		EX.LIL		DE,HL			; LD DE, HL
+  164 00:0138 E1 -  -  -  		POP		HL			; Restore HL
+  165 00:0139 -  -  -  -  ;						
+  166 00:0139 23 -  -  -  		INC		HL			; Onto the next character
+  167 00:013A 18 D3 -  -  		JR		_AtoI3			; And loop
+  168 00:013C -  -  -  -  
+  169 00:013C DD CB 00 86 _AtoI_invalid:	RES		0,(IX)			; reset "valid number" flag
+  170 00:0140 5B C1 -  -  _AtoI_end:	POP.LIL		BC			; recover BC
+  171 00:0142 DD CB 00 46 		BIT		0,(IX)			; transfer "valid number" bit to Z flag
+  172 00:0146 5B DD E1 -  		POP.LIL		IX			; recover IX
+  173 00:0149 C9 -  -  -  		RET
+  174 00:014A -  -  -  -  
+  175 00:014A 00 -  -  -  _AtoI_flags:	.DB		0			; storage for flags 
+  176 00:014B -  -  -  -  
+  177 00:014B -  -  -  -  ; Convert a character to upper case
+  178 00:014B -  -  -  -  ;  A: Character to convert
+  179 00:014B -  -  -  -  ;
+  180 00:014B E6 7F -  -  UPPRC:  	AND     	$7F
+  181 00:014D FE 61 -  -  		CP      	'a'			; check range
+  182 00:014F D8 -  -  -  		RET     	C
+  183 00:0150 FE 7B -  -  		CP      	'{'			; check range
+  184 00:0152 D0 -  -  -  		RET     	NC
+  185 00:0153 E6 5F -  -  		AND     	$5F			; Convert to upper case
+  186 00:0155 C9 -  -  -  		RET
+Listing for file "extest.asm"
+   13 00:0156 -  -  -  -  #include "../include/mos_api.inc"
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/mos_api.inc"
+    1 00:0156 -  -  -  -  ;
+    2 00:0156 -  -  -  -  ; Title:	AGON MOS - API for user projects
+    3 00:0156 -  -  -  -  ; Author:	Dean Belfield
+    4 00:0156 -  -  -  -  ; Ported to spasm-ng: Reinhard Schu
+    5 00:0156 -  -  -  -  ; Created:	03/08/2022
+    6 00:0156 -  -  -  -  ; Last Updated:	10/12/2022
+    7 00:0156 -  -  -  -  ;
+    8 00:0156 -  -  -  -  ; Modinfo:
+    9 00:0156 -  -  -  -  ; 05/08/2022:	Added mos_feof
+   10 00:0156 -  -  -  -  ; 09/08/2022:	Added system variables: cursorX, cursorY
+   11 00:0156 -  -  -  -  ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+   12 00:0156 -  -  -  -  ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+   13 00:0156 -  -  -  -  ; 24/09/2022:	Added mos_getError, mos_mkdir
+   14 00:0156 -  -  -  -  ; 13/10/2022:	Added mos_oscli
+   15 00:0156 -  -  -  -  
+   16 00:0156 -  -  -  -  ; MOS high level functions
+   17 00:0156 -  -  -  -  ;
+   18 00:0156 -  -  -  -  mos_getkey:		.EQU	00h
+   19 00:0156 -  -  -  -  mos_load:		.EQU	01h
+   20 00:0156 -  -  -  -  mos_save:		.EQU	02h
+   21 00:0156 -  -  -  -  mos_cd:			.EQU	03h
+   22 00:0156 -  -  -  -  mos_dir:		.EQU	04h
+   23 00:0156 -  -  -  -  mos_del:		.EQU	05h
+   24 00:0156 -  -  -  -  mos_ren:		.EQU	06h
+   25 00:0156 -  -  -  -  mos_mkdir:		.EQU	07h
+   26 00:0156 -  -  -  -  mos_sysvars:		.EQU	08h
+   27 00:0156 -  -  -  -  mos_editline:		.EQU	09h
+   28 00:0156 -  -  -  -  mos_fopen:		.EQU	0Ah
+   29 00:0156 -  -  -  -  mos_fclose:		.EQU	0Bh
+   30 00:0156 -  -  -  -  mos_fgetc:		.EQU	0Ch
+   31 00:0156 -  -  -  -  mos_fputc:		.EQU	0Dh
+   32 00:0156 -  -  -  -  mos_feof:		.EQU	0Eh
+   33 00:0156 -  -  -  -  mos_getError:		.EQU	0Fh
+   34 00:0156 -  -  -  -  mos_oscli:		.EQU	10h
+   35 00:0156 -  -  -  -  
+   36 00:0156 -  -  -  -  ; FatFS file access functions
+   37 00:0156 -  -  -  -  ;
+   38 00:0156 -  -  -  -  ffs_fopen:		.EQU	80h
+   39 00:0156 -  -  -  -  ffs_fclose:		.EQU	81h
+   40 00:0156 -  -  -  -  ffs_fread:		.EQU	82h
+   41 00:0156 -  -  -  -  ffs_fwrite:		.EQU	83h
+   42 00:0156 -  -  -  -  ffs_fseek:		.EQU	84h
+   43 00:0156 -  -  -  -  ffs_ftruncate:		.EQU	85h
+   44 00:0156 -  -  -  -  ffs_fsync:		.EQU	86h
+   45 00:0156 -  -  -  -  ffs_fforward:		.EQU	87h
+   46 00:0156 -  -  -  -  ffs_fexpand:		.EQU	88h
+   47 00:0156 -  -  -  -  ffs_fgets:		.EQU	89h
+   48 00:0156 -  -  -  -  ffs_fputc:		.EQU	8Ah
+   49 00:0156 -  -  -  -  ffs_fputs:		.EQU	8Bh
+   50 00:0156 -  -  -  -  ffs_fprintf:		.EQU	8Ch
+   51 00:0156 -  -  -  -  ffs_ftell:		.EQU	8Dh
+   52 00:0156 -  -  -  -  ffs_feof:		.EQU	8Eh
+   53 00:0156 -  -  -  -  ffs_fsize:		.EQU	8Fh
+   54 00:0156 -  -  -  -  ffs_ferror:		.EQU	90h
+   55 00:0156 -  -  -  -  
+   56 00:0156 -  -  -  -  ; FatFS directory access functions
+   57 00:0156 -  -  -  -  ;
+   58 00:0156 -  -  -  -  ffs_dopen:		.EQU	91h
+   59 00:0156 -  -  -  -  ffs_dclose:		.EQU	92h
+   60 00:0156 -  -  -  -  ffs_dread:		.EQU	93h
+   61 00:0156 -  -  -  -  ffs_dfindfirst:		.EQU	94h
+   62 00:0156 -  -  -  -  ffs_dfindnext:		.EQU	95h
+   63 00:0156 -  -  -  -  
+   64 00:0156 -  -  -  -  ; FatFS file and directory management functions
+   65 00:0156 -  -  -  -  ;
+   66 00:0156 -  -  -  -  ffs_stat:		.EQU	96h
+   67 00:0156 -  -  -  -  ffs_unlink:		.EQU	97h
+   68 00:0156 -  -  -  -  ffs_rename:		.EQU	98h
+   69 00:0156 -  -  -  -  ffs_chmod:		.EQU	99h
+   70 00:0156 -  -  -  -  ffs_utime:		.EQU	9Ah
+   71 00:0156 -  -  -  -  ffs_mkdir:		.EQU	9Bh
+   72 00:0156 -  -  -  -  ffs_chdir:		.EQU	9Ch
+   73 00:0156 -  -  -  -  ffs_chdrive:		.EQU	9Dh
+   74 00:0156 -  -  -  -  ffs_getcwd:		.EQU	9Eh
+   75 00:0156 -  -  -  -  
+   76 00:0156 -  -  -  -  ; FatFS volume management and system configuration functions
+   77 00:0156 -  -  -  -  ;
+   78 00:0156 -  -  -  -  ffs_mount:		.EQU	9Fh
+   79 00:0156 -  -  -  -  ffs_mkfs:		.EQU	A0h
+   80 00:0156 -  -  -  -  ffs_fdisk		.EQU	A1h
+   81 00:0156 -  -  -  -  ffs_getfree:		.EQU	A2h
+   82 00:0156 -  -  -  -  ffs_getlabel:		.EQU	A3h
+   83 00:0156 -  -  -  -  ffs_setlabel:		.EQU	A4h
+   84 00:0156 -  -  -  -  ffs_setcp:		.EQU	A5h
+   85 00:0156 -  -  -  -  	
+   86 00:0156 -  -  -  -  ; File access modes
+   87 00:0156 -  -  -  -  ;
+   88 00:0156 -  -  -  -  fa_read:		.EQU	01h
+   89 00:0156 -  -  -  -  fa_write:		.EQU	02h
+   90 00:0156 -  -  -  -  fa_open_existing:	.EQU	00h
+   91 00:0156 -  -  -  -  fa_create_new:		.EQU	04h
+   92 00:0156 -  -  -  -  fa_create_always:	.EQU	08h
+   93 00:0156 -  -  -  -  fa_open_always:		.EQU	10h
+   94 00:0156 -  -  -  -  fa_open_append:		.EQU	30h
+   95 00:0156 -  -  -  -  	
+   96 00:0156 -  -  -  -  ; System variable indexes for api_sysvars
+   97 00:0156 -  -  -  -  ; Index into _sysvars in globals.asm
+   98 00:0156 -  -  -  -  ;
+   99 00:0156 -  -  -  -  sysvar_time:		.EQU	00h
+  100 00:0156 -  -  -  -  sysvar_vpd_pflags:	.EQU	04h
+  101 00:0156 -  -  -  -  sysvar_keycode:		.EQU	05h
+  102 00:0156 -  -  -  -  sysvar_keymods:		.EQU	06h
+  103 00:0156 -  -  -  -  sysvar_cursorX:		.EQU	07h
+  104 00:0156 -  -  -  -  sysvar_cursorY:		.EQU	08h
+  105 00:0156 -  -  -  -  sysvar_scrchar:		.EQU	09h
+  106 00:0156 -  -  -  -  sysvar_scrpixel:	.EQU	0Ah
+  107 00:0156 -  -  -  -  sysvar_audioChannel:	.EQU	0Dh
+  108 00:0156 -  -  -  -  syscar_audioSuccess:	.EQU	0Eh
+  109 00:0156 -  -  -  -  	
+  110 00:0156 -  -  -  -  ; Flags for the VPD protocol
+  111 00:0156 -  -  -  -  ;
+  112 00:0156 -  -  -  -  vdp_pflag_cursor:	.EQU		00000001b
+  113 00:0156 -  -  -  -  vdp_pflag_scrchar:	.EQU		00000010b
+  114 00:0156 -  -  -  -  vdp_pflag_point:	.EQU		00000100b
+  115 00:0156 -  -  -  -  vdp_pflag_audio:	.EQU		00001000b
+  116 00:0156 -  -  -  -  vdp_pflag_mode:		.EQU		00010000b
+  117 00:0156 -  -  -  -  	
+  118 00:0156 -  -  -  -  ;
+  119 00:0156 -  -  -  -  ; Macro for calling the API
+  120 00:0156 -  -  -  -  ; Parameters:
+  121 00:0156 -  -  -  -  ; - mosfunc: One of the function numbers listed above
+  122 00:0156 -  -  -  -  ;
+  123 00:0156 -  -  -  -  
+  124 00:0156 -  -  -  -  #ifdef ADL
+  125 00:0156                     #DEFINE         MOSCALL(mosfunc)        LD	A,mosfunc
+  126 00:0156                     #DEFCONT                              \ RST.LIL	$08
+  127 00:0156             #else
+  128 00:0156 -  -  -  -          #DEFINE         MOSCALL(mosfunc)        LD	A,mosfunc
+  129 00:0156 -  -  -  -          #DEFCONT                              \ RST	$08
+  130 00:0156 -  -  -  -  #endif
+Listing for file "extest.asm"
+   14 00:0156 -  -  -  -  
+   15 00:0156 -  -  -  -  ; The main routine
+   16 00:0156 -  -  -  -  ;
+   17 00:0156 -  -  -  -  MAIN:
+   18 00:0156 5B 21 F4 9B 
+              6A -  -  -                  LD.L            HL,$6A9BF4
+   19 00:015B 5B 11 FE CD 
+              AB -  -  -  		LD.L		DE,$ABCDFE
+   20 00:0160 -  -  -  -  
+   21 00:0160 5B EB -  -  		EX.L		DE,HL
+   22 00:0162 -  -  -  -  
+   23 00:0162 CD 75 00 00                 CALL            Print_Hex24
+   24 00:0166 3E 0A D7 -                  PRT_CRLF
+Listing for file "/usr/src/reiny/eZ80/Agon-Light-Assembly/test/../include/helper_macros.inc"
+
+              3E 0D D7 Listing for file "extest.asm"
+   25 00:016C -  -  -  -  
+   26 00:016C 21 00 00 00                 LD              HL,0                    ;return zero to MOS
+   27 00:0170 C9 -  -  -  		RET
+   28 00:0171 -  -  -  -  
