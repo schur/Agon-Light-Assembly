@@ -21,7 +21,7 @@ This has various consequences and effects and need to be taken into consideratio
 
 When writing an assembly program that is to be used as a MOS command, make sure to include the following lines at the top of your main.asm:
         
-           #undefine ADL
+    #undefine ADL
         
 This tells the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file (and other helper functions) in this repository that the code is written in Z80 legacy mode. In addition, the init.inc file contains initialisation code that automatically makes the necessary adjustments for MOS commands if it detects that the program is being run in Z80 legacy (16-bit) mode and MB (Upper Byte) is set to $0B. 
 
@@ -35,7 +35,7 @@ It is the programmers responsibilty to manage the available address space of 32k
 
 ## Stack
 
-The eZ80 has two separate SP registers: a 16-bit SPS register (with MB as uper byte) and a 24-bit SPL register. These two stack pointers operate completly independently and both stacks can be accessed by a program written in assembly. The [stacktest](https://github.com/schur/Agon-Light-Assembly/tree/main/stacktest) program demonstrates and illustrates this behaviour.
+The eZ80 has two separate stack pointer (SP) registers: a 16-bit SPS register (with MB as uper byte) and a 24-bit SPL register. These two stack pointers operate completly independently and both stacks can be accessed by a program written in assembly. The [stacktest](https://github.com/schur/Agon-Light-Assembly/tree/main/stacktest) program demonstrates and illustrates this behaviour.
 
 In the Agon Light MOS, the global stack (SPL) descends down from $0BFFFF. When the MOS spwans a program in Z80 (16-bit) mode, the SPS defaults to descend from $FFFF. This is a problem, as it creates an immediate stack conflict between the two stacks when a MOS command is spawned at $0B0000. 
 
@@ -47,69 +47,49 @@ PUSH/POP instructions within a program running as a MOS command will use the SPS
 
 As discussed above, the MOS command runs in Z80 legacy (16-bit) mode within the address space $0000-$7FFF from its own perspective (absolute address space $0B0000-$0B7FFF). This is the "Matrix" within which the MOS command operates.
 
+### Writing outside the Matrix is verboten
+
 The MOS command must not write anything outside of this address space, as this could overwrite other data or programs loaded into the Agon Light's RAM with unpredictable results, since the MOS command does not have knowledge about which addresses in RAM might be being used by MOS or other programs.
 
 The only valid way for a MOS program to write anything outside of its "Matrix" address space is by using the SPL via the PUSH.L/POP.L instructions.
 
+### Reading from outside the Matrix 
 However, it may be necessary for a MOS program to read data from outside its "Matrix" address space. For example, the [memdump](https://github.com/schur/Agon-Light-Assembly/tree/main/memory_dump) command can read and display the contents of any address within the entire 24-bit address space. Doing so is posible, but not trivial.
 
 To read from any memory address outside of the "Matrix", the LD instruction must be used with the .L suffix in the source code. This tells the eZ80 to use ADL (24-bit) mode just for the one instruction to which the .L suffix is added.
 
-When the memory address form which data is to be read is known at the time of writing the code, then it is straightforward:
+When the memory address from which data is to be read is known at the time of writing the code, then it can be hardcoded into the code as an immediate value:
 
-           #undefine ADL
+              LD.L      HL,$040000
+              LD.L      A,(HL)
+              CALL      Print_Hex8
+              PRT_CRLF
 
+This loads the contents of address $040000 into the Accumulator and prints the value.
 
+By using the IX or IY register it is also possible to load from an offset from an address:
 
-Software for the Agon Light™ written in eZ80 Assembly for the [spasm-ng](https://github.com/alberthdev/spasm-ng) assembler. (no need for the rather bloated Zilog Developer Studio)
+              LD        B,$0F
+              LD.L      IX,$040000
+    _LOOP:    LD.L      A,(IX)
+              CALL      Print_Hex8
+              PRT_CRLF
+              INC       IX
+              DJNZ      _LOOP
 
-- The file init.asm in the [include directory](https://github.com/schur/Agon-Light-Assembly/tree/main/include) provides the necessary header for an assembly program to work with the MOS.
-- The file helper_functions.asm has some essential functions (work in Progress - to be expanded)
+This prints the contents of address $040000-$04000F.
 
-Feel free to contribute.
+When the memory address from which data is to be read will only be known at runtime, the full 24-bit address needs to be calculated using .L suffixes as necessary.  The AtoI function in [helper_functions.asm](https://github.com/schur/Agon-Light-Assembly/blob/main/include/helper_functions.asm) provides a good example.
 
-## Instructions
+              LD        DE,Buffer               ; set DE to point to buffer
+              CALL      READ_ARG                ; read argument (from HL to DE)
+              EX        DE,HL                   ; move DE (ptr to parsed ergument) to HL (input for AtoI)
+              CALL      AtoI                    ; Convert to hex, result in DEU
+              EX.L      DE,HL                   ; move DEU to HLU
+              LD.L      A,(HL)
+              CALL      Print_Hex8
+              PRT_CRLF                
 
-1. Clone this git repo to your local machine
+The first 4 lines of the above code use helper functions to read an argument (a 24-bit address) from the MOS command line and convert it to a 24-bit hex value. The result of the conversion after AtoI is in DEU. The EX.L instruction transfers the full 24-bit value to HL and then content of the address HL points to can finally be read with the LD.L instruction.
 
-        git clone https://github.com/schur/Agon-Light-Assembly/
-
-2. Download and compile [spasm-ng](https://github.com/alberthdev/spasm-ng)
-
-3. Assemble the desired programs with
-
-        spasm -E -T <filename>
-   [spasm-ng Manual](#spasm-ng-manual)
-
-## Coding Guidelines
-
-If you would like to write your own programs, feel free to use the [include files](https://github.com/schur/Agon-Light-Assembly/tree/main/include) from this repository.
-
-1. Make sure to include the following lines at the top of your main.asm:
-        
-        ; uncomment one of the below to chose between ADL (24-bit) or Z80 legacy (16-bit) mode
-        ; if nothing is uncommented, Z80 legacy mode will be used
-        ;   #define ADL
-        ;   #undefine ADL
-        
-        #include "../include/init.inc"
-        #include "../include/mos_api.inc"
-        #include "../include/helper_functions.asm"
-
-2. Write your own code with the main function labelled "MAIN"
-
-        MAIN:
-                 <your code here>
-                CALL	<your helper function calls here>
-                RET
-
-### ADL (24-bit) vs Z80 legacy (16-bit) mode
-
-In ADL mode, the program is aware of the full address space. The Agon MOS loads programs by default to address $40000, so if ADL mode is set (#define ADL), the init.asm include file will set the .org $40000 directive.
-
-In Z80 legacy mode, the program will, from its point of view, be located from address $0000.  The program will have 32kb of address space to $7FFF available to itself. Note, the SPS stack expands downwards from $7FFF, so if your assembled code is very large, you need to make sure it doesn't clas with the stack. 
-
-### Assembling as MOS (*) commands
-
-If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card), you must use Z80 legacy (16-bit) mode. This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
-
+## Managing internal data
