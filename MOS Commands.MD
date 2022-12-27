@@ -17,6 +17,14 @@ Think of it as the program running inside a "Matrix" that looks like a 64kb addr
 
 This has various consequences and effects and need to be taken into consideration when writing assembly code specifically for MOS commands on the Agon Light. These are discussed below.
 
+## Coding Guidelines
+
+When writing an assembly program that is to be used as a MOS command, make sure to include the following lines at the top of your main.asm:
+        
+           #undefine ADL
+        
+This tells the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file (and other helper functions) in this repository that the code is written in Z80 legacy mode. In addition, the init.inc file contains initialisation code that automatically makes the necessary adjustments for MOS commands if it detects that the program is being run in Z80 legacy (16-bit) mode and MB (Upper Byte) is set to $0B. 
+
 ## Program Size and usable Address Space
 
 The address space available to the MOS command is $0B0000-$0B7FFF in the 24-bit memory map of the Agon Light, or $0000-$7FFF from the programs own point of view. This means that there is only 32kb of address space available for MOS commands, including stack and internal variables and buffers. The program code is located from adress $0000, the stack descends down from $7FFF (see section on stack below) and the space between the end of the program code and lowest point of the stack can be used for internal data (such as variables and buffers).
@@ -27,12 +35,29 @@ It is the programmers responsibilty to manage the available address space of 32k
 
 ## Stack
 
-The program will have 32kb of address space to $7FFF available to itself. Note, the SPS stack expands downwards from $7FFF, so if your assembled code is very large, you need to make sure it doesn't clas with the stack. 
+The eZ80 has two separate SP registers: a 16-bit SPS register (with MB as uper byte) and a 24-bit SPL register. These two stack pointers operate completly independently and both stacks can be accessed by a program written in assembly. The [stacktest](https://github.com/schur/Agon-Light-Assembly/tree/main/stacktest) program demonstrates and illustrates this behaviour.
 
+In the Agon Light MOS, the global stack (SPL) descends down from $0BFFFF. When the MOS spwans a program in Z80 (16-bit) mode, the SPS defaults to descend from $FFFF. This is a problem, as it creates an immediate stack conflict between the two stacks when a MOS command is spawned at $0B0000. 
 
-This is because the MOS will load your program, if executed as a MOS command, to $B0000. Please note, your assembled program must be 32kb or less. 
+Therefore, for a MOS command, the SPS stack needs to descend from $7FFF (from the program's point of view - in absolute terms from $0B7FFF). This needs to be explicitly set at the beginning of the code of the MOS command  before starting to push any values onto the SPS, otherwise the MOS command's SPS will conflict with the global SPL. Note: This is already taken care of by the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file in this repository.
 
-In addition, the SPS stack pointer needs to be set to $7FFE before starting to push any values onto the SPS, otherwise the MOS command's SPS will conflict with the global SPL. Note: This is already taken care of by the [init.inc](https://github.com/schur/Agon-Light-Assembly/blob/main/include/init.inc) include file in this repository.  See the [stacktest](https://github.com/schur/Agon-Light-Assembly/tree/main/stacktest) example program for more details on this.
+PUSH/POP instructions within a program running as a MOS command will use the SPS and will therefore eat (from above) into the available 32kb address space. It is possible to use the SPL instead via the PUSH.L/POP.L instructions.
+
+## Escaping the Matrix
+
+As discussed above, the MOS command runs in Z80 legacy (16-bit) mode within the address space $0000-$7FFF from its own perspective (absolute address space $0B0000-$0B7FFF). This is the "Matrix" within which the MOS command operates.
+
+The MOS command must not write anything outside of this address space, as this could overwrite other data or programs loaded into the Agon Light's RAM with unpredictable results, since the MOS command does not have knowledge about which addresses in RAM might be being used by MOS or other programs.
+
+The only valid way for a MOS program to write anything outside of its "Matrix" address space is by using the SPL via the PUSH.L/POP.L instructions.
+
+However, it may be necessary for a MOS program to read data from outside its "Matrix" address space. For example, the [memdump](https://github.com/schur/Agon-Light-Assembly/tree/main/memory_dump) command can read and display the contents of any address within the entire 24-bit address space. Doing so is posible, but not trivial.
+
+To read from any memory address outside of the "Matrix", the LD instruction must be used with the .L suffix in the source code. This tells the eZ80 to use ADL (24-bit) mode just for the one instruction to which the .L suffix is added.
+
+When the memory address form which data is to be read is known at the time of writing the code, then it is straightforward:
+
+           #undefine ADL
 
 
 
