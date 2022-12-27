@@ -93,3 +93,9 @@ When the memory address from which data is to be read will only be known at runt
 The first 4 lines of the above code use helper functions to read an argument (a 24-bit address) from the MOS command line and convert it to a 24-bit hex value. The result of the conversion after AtoI is in DEU. The EX.L instruction transfers the full 24-bit value to HL and then content of the address HL points to can finally be read with the LD.L instruction.
 
 ## Managing internal data
+
+As discussed above, the MOS command runs in Z80 legacy (16-bit) mode within the address space $0000-$7FFF (from its own perspective), and it needs to store any internal data (such as variables and buffers) within that space. Typically, space for data can be made using assembler directives such as labels and .BLOCK or .DB or .ORG directives.
+
+     variables:        .BLOCK	$10		; reserve 16 bytes for storing data
+
+This reserves space within the program code for data. It does count towards the size of the binary executable file, so it should only be used when 
