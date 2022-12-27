@@ -1,29 +1,31 @@
-# Notes on writing MOS (*) commands
+# Writing MOS (*) commands for the Agon Light in Assembly 
 
 If you want to use your assembled program as a MOS command (saved in the /mos folder of the SD card of the Agon Light), there are some special issues to pay attention to. These are described below.
 
 ### Why write MOS commands in Assembly?
 
-The main reason for writing MOS commands in assembly, rather than for example C, is program size. There is only 32kb of address space available for MOS commands, including stack and internal variables and buffers. Compiled C code can quickly get bloated, 
-
+The main reason for writing MOS commands in assembly, rather than for example C, is program size. There is only 32kb of address space available for MOS commands, including stack and internal variables and buffers. Even a simple utility program, such as an editor, could quickly exceed that size when written in C. An assembly program, on the other hand, will rarely exceed a few kb in size if no graphics are involved.
 
 ## Z80 Legacy (16-bit) mode
 
 The Agon Light MOS spawns MOS commands in Z80 legacy (16-bit) mode.
 
-To be precise, to spawn the program constituting the MOS command, the MOS first loads the program to the address $0B0000 and then uses the CALL.IS $0000 instruction with MB set to $0B to spwan the program.  Amongst other things, the CALL.IS instruction resets the ADL mode bit to 0.
+To be precise, to spawn the program constituting the MOS command, the MOS first loads the program to address $0B0000 and then uses the CALL.IS $0000 instruction with the MB (upper byte) set to $0B to spwan the program.  Amongst other things, the CALL.IS instruction resets the ADL mode bit to 0.
 
-This means that from the program's point of view, it will be located from address $0000 within a 16-bit address space. All CPU instructions will be executed in Z80 legacy (16-bit) mode and will thus, unless the instruction is suffixed with .L, .IL or .LIL in the source code. 
-Think of it as the program running inside a matrix that looks like a 64kb address space to the program, when in reality, the program resides in the 64k page $0Bxxxx of the larger 24-bit address space.
+This means that from the program's own point of view, it is located from address $0000 within a 16-bit address space. All CPU instructions will be executed in Z80 legacy (16-bit) mode, unless the instruction is suffixed with .L, .IL or .LIL in the source code (more about that below). 
+Think of it as the program running inside a "Matrix" that looks like a 64kb address space to the program, when in reality, the program resides in the 64k page $0Bxxxx of the larger 24-bit address space.
 
 This has various consequences and effects and need to be taken into consideration when writing assembly code specifically for MOS commands on the Agon Light. These are discussed below.
 
-## Program Size
+## Program Size and usable Address Space
 
-Your 
+The address space available to the MOS command is $0B0000-$0B7FFF in the 24-bit memory map of the Agon Light, or $0000-$7FFF from the programs own point of view. This means that there is only 32kb of address space available for MOS commands, including stack and internal variables and buffers. The program code is located from adress $0000, the stack descends down from $7FFF (see section on stack below) and the space between the end of the program code and lowest point of the stack can be used for internal data (such as variables and buffers).
+
+The MOS command must not write anything outside of this address space, as this could overwrite other data or programs loaded into the Agon Light's RAM with unpredictable results, since the MOS command does not have knowledge about which addresses in RAM might be being used by MOS or other programs.
+
+It is the programmers responsibilty to manage the available address space of 32kb.
 
 ## Stack
-
 
 The program will have 32kb of address space to $7FFF available to itself. Note, the SPS stack expands downwards from $7FFF, so if your assembled code is very large, you need to make sure it doesn't clas with the stack. 
 
