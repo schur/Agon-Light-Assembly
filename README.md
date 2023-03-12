@@ -77,3 +77,6 @@ There is no manual for the spasm-ng assembler itself. However, the syntax for as
 - [VDP Commands](https://github.com/breakintoprogram/agon-vdp/blob/main/MANUAL.md)
 - [Learn eZ80 Assembly](https://www.chibiakumas.com/ez80/)
 - [Zilog eZ80 Manual](https://www.manualslib.com/manual/2210443/Zilog-Ez80.html#manual)
+
+convert .hex files to .bin files: 
+        objcopy --input-target=ihex --output-target=binary <filename>.hex <filename>.bin 
