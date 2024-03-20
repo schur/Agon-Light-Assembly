@@ -33,7 +33,10 @@ RST_10:		RST.LIS	10h		; Output
 		RET
 		.BLOCK	5
 			
-RST_18:		.BLOCK	8
+RST_18:		RST.LIS	18h		; Stream output
+		RET
+		.BLOCK 5
+
 RST_20:		.BLOCK	8
 RST_28:		.BLOCK	8
 RST_30:		.BLOCK	8	
